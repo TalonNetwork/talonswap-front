@@ -1,40 +1,50 @@
-import {BigNumber} from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import copy from "copy-to-clipboard";
 
+interface Obj {
+  [key: string]: unknown
+}
+
+type Big = BigNumber | string | number
+
+export function isValidKey(key: string | number | symbol , object: Obj): key is keyof typeof object {
+  return key in object;
+}
+
 // 10的N 次方
-export const Power = (arg: string) => {
-  let newPower = new BigNumber(10);
+export const Power = (arg: Big) => {
+  const newPower = new BigNumber(10);
   return newPower.pow(arg);
 };
 
 // 加法
 export const Plus = (nu: string, arg: string) => {
-  let newPlus = new BigNumber(nu);
+  const newPlus = new BigNumber(nu);
   return newPlus.plus(arg);
 };
 
 // 减法
 export const Minus = (nu: string, arg: string) => {
-  let newMinus = new BigNumber(nu);
+  const newMinus = new BigNumber(nu);
   return newMinus.minus(arg);
 };
 
 // 乘法
 export const Times = (nu: string, arg: string) => {
-  let newTimes = new BigNumber(nu);
+  const newTimes = new BigNumber(nu);
   return newTimes.times(arg);
 };
 
 // 除法
-export const Division = (nu: string, arg: string) => {
-  let newDiv = new BigNumber(nu);
+export const Division = (nu: Big, arg: Big) => {
+  const newDiv = new BigNumber(nu);
   return newDiv.div(arg);
 };
 
 // 数字乘以精度系数
 export const timesDecimals = (nu: string, decimals: number) => {
   if (decimals === 0) {
-    return nu
+    return nu;
   }
   return new BigNumber(Times(nu, Power(decimals.toString()).toString()))
     .toFormat()
@@ -53,6 +63,22 @@ export const divisionDecimals = (nu: string, decimals: number) => {
     .replace(/[,]/g, "");
 };
 
+export function divisionAndFix(nu: string, decimals: string | number, fix = 6) {
+  const newFix = fix ? fix : Number(decimals)
+  const str = new BigNumber(Division(nu, Power(decimals))).toFixed(newFix)
+  const pointIndex = str.indexOf(".");
+  let lastStr = str.substr(str.length - 1);
+  let lastIndex = str.length;
+  while(lastStr === "0" && lastIndex >= pointIndex) {
+    lastStr = str.substr(lastIndex - 1, 1);
+    if (lastStr === "0") {
+      lastIndex = lastIndex -1
+    }
+  }
+  lastIndex = str.substr(lastIndex - 1 , 1) === "." ? lastIndex -1 : lastIndex
+  return str.substring(0,lastIndex)
+}
+
 /**
  * 保留指定小数位数
  * @param val 要处理的数据，Number | String
@@ -64,25 +90,25 @@ export const tofix = (val: string, len: number, side: number) => {
   const numval = Number(val);
   if (isNaN(numval)) return 0;
   const str = val.toString();
-  if (str.indexOf('.') > -1) {
-    let numArr = str.split('.');
+  if (str.indexOf(".") > -1) {
+    const numArr = str.split(".");
     if (numArr[1].length > len) {
-      let tempnum = numval * Math.pow(10, len);
+      const tempnum = numval * Math.pow(10, len);
       if (!side) {
-        return Number(val).toFixed(len)
+        return Number(val).toFixed(len);
       } else if (side === 1) {
-        if (tempnum < 1) return (1 / Math.pow(10, len));
-        return (Math.ceil(tempnum) / Math.pow(10, len)).toFixed(len)
+        if (tempnum < 1) return 1 / Math.pow(10, len);
+        return (Math.ceil(tempnum) / Math.pow(10, len)).toFixed(len);
       } else if (side === -1) {
-        return (Math.floor(tempnum) / Math.pow(10, len)).toFixed(len)
+        return (Math.floor(tempnum) / Math.pow(10, len)).toFixed(len);
       } else {
-        return Number(Number(val).toFixed(len))
+        return Number(Number(val).toFixed(len));
       }
     } else {
-      return Number(str).toFixed(len)
+      return Number(str).toFixed(len);
     }
   } else {
-    return Number(val).toFixed(len)
+    return Number(val).toFixed(len);
   }
 };
 
@@ -105,11 +131,24 @@ export const copys = (val: string) => {
 export const superLong = (str: string, len: number) => {
   if (str && str.length > 10) {
     return (
-      str.substr(0, len) +
-      "...." +
-      str.substr(str.length - len, str.length)
+      str.substr(0, len) + "...." + str.substr(str.length - len, str.length)
     );
   } else {
     return str;
   }
 };
+
+export const chainToSymbol = {
+  NULS: "NULS",
+  NERVE: "NVT",
+  Ethereum: "ETH",
+  BSC: "BNB",
+  Heco: "HT",
+  OKExChain: "OKT"
+};
+
+export function getIconSrc(icon: string) {
+  return "https://nuls-cf.oss-us-west-1.aliyuncs.com/icon/" +
+  icon +
+  ".png"
+}

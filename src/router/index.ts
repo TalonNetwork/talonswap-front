@@ -1,48 +1,49 @@
-import {createRouter, createWebHashHistory} from 'vue-router'
+import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
+import Farm from "@/views/farm/index.vue"
 
-import Home from "../views/home/home.vue";
-import Assets from "../views/assets/Assets.vue";
-import Trading from "../views/trading/Trading.vue";
-import Liquidity from "../views/liquidity/Liquidity.vue";
-import Farm from "../views/farm/Farm.vue";
-import Info from "../views/info/Info.vue";
+const routes: Array<RouteRecordRaw> = [
+  {
+    path: "",
+    name: "home",
+    component: () => import("@/views/home/Home.vue"),
+    // component: () => import("@/views/test/index.vue"),
+  },
+  {
+    path: "/assets",
+    name: "assets",
+    component: () => import("../views/assets/index.vue"),
+  },
+  {
+    path: "/trading",
+    name: "trading",
+    component: () => import("@/views/trading/index.vue"),
+  },
+  {
+    path: "/liquidity",
+    name: "liquidity",
+    component: () => import("@/views/liquidity/index.vue"),
+  },
+  {
+    path: "/farm",
+    name: "farm",
+    // component: () => import("@/views/farm/index.vue"),
+    component: Farm,
+  },
+  {
+    path: "/info",
+    name: "info",
+    component: () => import("@/views/info/Info.vue"),
+  },
+  {
+    path: "/test",
+    name: "test",
+    component: () => import("@/views/test/index.vue"),
+  }
+];
 
 const router = createRouter({
-  //history: "history",
-  history: createWebHashHistory(),
-  routes: [
-    {
-      path: '',
-      name: 'home',
-      component: Farm,
-    },
-    {
-      path: "/assets",
-      name: "assets",
-      component: Assets,
-    },
-    {
-      path: "/trading",
-      name: "trading",
-      component: Trading,
-    },
-    {
-      path: "/liquidity",
-      name: "liquidity",
-      component: Liquidity,
-    },
-    {
-      path: "/farm",
-      name: "farm",
-      component: Farm,
-    },
-    {
-      path: "/info",
-      name: "info",
-      component: Info,
-    },
-
-  ]
+  history: createWebHistory(process.env.BASE_URL),
+  routes,
 });
 
 export default router;

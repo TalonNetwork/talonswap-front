@@ -1,30 +1,29 @@
-import {ethers} from "ethers";
-import {Minus} from "./util";
+import { ethers } from "ethers";
+import { Minus } from "./util";
 
 const RPC_URL = {
   BSC: {
     ropsten: "https://data-seed-prebsc-1-s1.binance.org:8545/",
-    homestead: "https://bsc-dataseed.binance.org/"
+    homestead: "https://bsc-dataseed.binance.org/",
   },
   Heco: {
     ropsten: "https://http-testnet.hecochain.com",
-    homestead: "https://http-mainnet.hecochain.com"
+    homestead: "https://http-mainnet.hecochain.com",
   },
   OKExChain: {
     ropsten: "https://exchaintestrpc.okex.org",
-    homestead: "https://exchainrpc.okex.org"
-  }
+    homestead: "https://exchainrpc.okex.org",
+  },
 };
 const ERC20_ABI = [
   "function allowance(address owner, address spender) external view returns (uint256)",
-  "function approve(address spender, uint256 amount) external returns (bool)"
+  "function approve(address spender, uint256 amount) external returns (bool)",
 ];
-let chain = 'Ethereum';
-let network = 'main';
+let chain = "Ethereum";
+let network = "main";
 let provider = {};
 
 export class ETransfer {
-
   constructor(props: any) {
     if (!props.chain) {
       throw "未获取到网络，组装交易失败";
@@ -57,16 +56,20 @@ export class ETransfer {
    * @param multySignAddress 多签地址
    * @param address 账户eth地址
    */
-  async getERC20Allowance(contractAddress: string, multySignAddress: string, address: string) {
+  async getERC20Allowance(
+    contractAddress: string,
+    multySignAddress: string,
+    address: string
+  ) {
     const contract = new ethers.Contract(contractAddress, ERC20_ABI, provider);
     const allowancePromise = contract.allowance(address, multySignAddress);
     return allowancePromise
-      .then(allowance => {
-        const baseAllowance = '39600000000000000000000000000';
+      .then((allowance) => {
+        const baseAllowance = "39600000000000000000000000000";
         //已授权额度小于baseAllowance，则需要授权
         return Number(Minus(baseAllowance, allowance)) >= 0;
       })
-      .catch(e => {
+      .catch((e) => {
         console.error("获取erc20资产授权额度失败" + e);
         return true;
       });
@@ -78,7 +81,11 @@ export class ETransfer {
    * @param multySignAddress 多签地址
    * @param address 账户eth地址
    */
-  async getApproveERC20Hex(contractAddress: string, multySignAddress: string, address: string) {
+  async getApproveERC20Hex(
+    contractAddress: string,
+    multySignAddress: string,
+    address: string
+  ) {
     const wallet = await this.getWallet();
     const nonce = await wallet.getTransactionCount();
     const gasPrice = await provider.getGasPrice();
@@ -87,7 +94,9 @@ export class ETransfer {
     const iface = new ethers.utils.Interface(ERC20_ABI);
     const data = iface.functions.approve.encode([
       multySignAddress,
-      new ethers.utils.BigNumber("0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+      new ethers.utils.BigNumber(
+        "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+      ),
     ]);
     const transaction = {
       to: contractAddress,
@@ -96,7 +105,7 @@ export class ETransfer {
       data: data,
       nonce,
       gasLimit: Number(gasLimit),
-      gasPrice
+      gasPrice,
     };
     const failed = await this.validate(transaction);
     if (failed) {
@@ -118,5 +127,4 @@ export class ETransfer {
       return false;
     }
   }
-
 }
