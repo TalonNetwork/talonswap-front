@@ -27,7 +27,7 @@ export default {
 
 <style lang="scss" scoped>
 .custom-input {
-  border: 1px solid #4a5ef2;
+  border: 1px solid #E3EEFF;
   border-radius: 15px;
   padding: 15px 20px;
   .info {
@@ -46,6 +46,20 @@ export default {
       height: 20px;
       border-radius: 50%;
       background-color: red;
+    }
+  }
+  :deep(.el-input) {
+    .el-input-group__append, .el-input-group__prepend {
+      background-color: transparent;
+      border: none;
+      span {
+        display: inline-block;
+        padding: 3px 6px;
+        color: #4B7CF7;
+        background-color: #E4E7FF;
+        cursor: pointer;
+        border-radius: 5px;
+      }
     }
   }
 }

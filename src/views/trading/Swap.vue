@@ -1,24 +1,32 @@
 <template>
   <div class="swap pd_40_rd_20">
     <div class="icon-wrap flex-between">
-      <div class="left click" @click="toggleExpand"></div>
+      <div class="left click" @click="toggleExpand">
+        <i class="iconfont icon-zhankai"></i>
+      </div>
       <div class="right flex-center">
-        <span></span>
-        <span></span>
-        <span @click="toggleSettingDialog"></span>
+        <span><i class="iconfont icon-shuaxin"></i></span>
+        <span><i class="iconfont icon-fenxiang"></i></span>
+        <span @click="toggleSettingDialog">
+          <i class="iconfont icon-shezhi"></i>
+        </span>
       </div>
     </div>
     <div class="swap-area">
       <div class="from-symbol">
         <custom-input></custom-input>
       </div>
-      <div class="change-direction tc">
+      <div class="change-direction">
+        <img src="../../assets/img/swap-to.svg" alt="" />
         <span></span>
       </div>
       <div class="to-symbol">
         <custom-input></custom-input>
       </div>
-      <div class="exchange-rate">1 BNB ≈ 2347.38 USDT</div>
+      <div class="exchange-rate">
+        1 BNB ≈ 2347.38 USDT
+        <i class="iconfont icon-qiehuan"></i>
+      </div>
       <div class="confirm-wrap">
         <el-button type="primary">{{ $t("public.public10") }}</el-button>
       </div>
@@ -132,15 +140,17 @@ export default defineComponent({
     .left {
       width: 27px;
       height: 25px;
-      background-color: red;
+      i {
+        font-size: 22px;
+      }
     }
     .right {
       span {
-        width: 24px;
-        height: 24px;
-        background-color: red;
         margin-left: 15px;
         cursor: pointer;
+        i {
+          font-size: 22px;
+        }
       }
     }
   }
@@ -148,18 +158,22 @@ export default defineComponent({
     margin-top: 18px;
   }
   .change-direction {
-    margin: 10px 0;
-    span {
-      display: inline-block;
-      width: 32px;
-      height: 32px;
-      background-color: red;
-    }
+    margin: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
   }
   .exchange-rate {
     margin: 20px 0;
     display: flex;
     justify-content: center;
+    i {
+      font-size: 16px;
+      margin: 3px 0 0 5px;
+      cursor: pointer;
+      color: #4A5EF2;
+    }
   }
   .swap-setting-info {
     border-top: 1px solid #e3eeff;
@@ -223,7 +237,7 @@ export default defineComponent({
           }
         }
       }
-      ::v-deep .el-input {
+      :deep(.el-input) {
         width: 100px;
         margin-right: 3px;
         .el-input__inner {
@@ -232,7 +246,7 @@ export default defineComponent({
       }
       .bottom {
         padding: 0 0 20px;
-        ::v-deep .el-button {
+        :deep(.el-button) {
           width: 185px;
           height: 48px;
           border-radius: 15px;

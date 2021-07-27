@@ -6,7 +6,7 @@
     </div>
     <custom-input></custom-input>
     <div class="add">
-      <div></div>
+      <img src="../../assets/img/swap-to.svg" alt="" />
     </div>
     <custom-input></custom-input>
     <div class="liquidity-info">
@@ -75,11 +75,8 @@ export default defineComponent({
   .add {
     display: flex;
     justify-content: center;
-    div {
-      width: 32px;
-      height: 32px;
-      background-color: red;
-    }
+    align-items: center;
+    cursor: pointer;
     margin: 12px 0;
   }
   .liquidity-info {

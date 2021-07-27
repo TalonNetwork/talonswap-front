@@ -15,7 +15,20 @@ const cn = {
     
   },
   home: {
-    home1: "首页",
+    home1: "总质押: ",
+    home2: "Talon实时信息",
+    home3: "当前价格",
+    home4: "总流通量",
+    home5: "已销毁",
+    home6: "总发行",
+    home7: "用户已领取奖励",
+    home8: "待用户领取奖励",
+    home9: "更多",
+    home10: "奖励的资产",
+    home11: "质押",
+    home12: "24H交易量",
+    home13: "24H交易次数",
+    home14: "24H交易手续费"
   },
   assets: {
     assets1: "Layer2资产",
@@ -68,6 +81,12 @@ const cn = {
     liquidity9: "确认添加",
     liquidity10: "你是该交易对首位流动性的提供者，因此你首次加入池子 的Token比例会作为他们的初始价格",
     liquidity11: "占资金池比例",
+  },
+  login: {
+    login1: "请先生成Talon地址",
+    login2: "立即生成",
+    login3: "生成Talon地址失败: ",
+    login4: "连接钱包"
   }
 };
 

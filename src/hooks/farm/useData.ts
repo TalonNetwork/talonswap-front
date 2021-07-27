@@ -1,6 +1,7 @@
 import { reactive, toRefs } from "vue";
 import { listen, unListen } from "@/api/websocket";
 import config from "@/config";
+import { genId } from "@/api/util";
 
 const url = config.WS_URL;
 
@@ -55,7 +56,7 @@ export default function useData() {
     const channel = "farmList"
     const params = {
       method: channel,
-      id: "1234"
+      id: genId()
     };
     listen({
       url,

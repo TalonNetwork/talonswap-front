@@ -1,0 +1,366 @@
+<template>
+  <div class="w1300 home">
+    <div class="overview-total lh_1">
+      {{ $t("home.home1") }}{{ rewardInfo.locked }}
+    </div>
+    <div class="info-top pd_40">
+      <div class="title">{{ $t("home.home2") }}</div>
+      <div class="info-wrap flex-center">
+        <div class="info-item">
+          <p class="label">{{ $t("home.home3") }}</p>
+          <p class="value">${{ overviewData.priceUSD }}</p>
+        </div>
+        <div class="info-item">
+          <p class="label">{{ $t("home.home4") }}</p>
+          <p class="value">{{ overviewData.circulation }}</p>
+        </div>
+        <div class="info-item">
+          <p class="label">{{ $t("home.home5") }}</p>
+          <p class="value">{{ overviewData.destroyed }}</p>
+        </div>
+        <div class="info-item">
+          <p class="label">{{ $t("home.home6") }}</p>
+          <p class="value">{{ overviewData.totalAmount }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="info-middle">
+      <div class="left">
+        <div class="left-top pd_40">
+          <div>
+            <div class="title">
+              {{ $t("home.home7") }}
+            </div>
+            <p>${{ rewardInfo.received }}</p>
+          </div>
+          <div class="flex1-tr">
+            <i class="iconfont icon-yilingjiangli"></i>
+          </div>
+        </div>
+        <div class="left-bottom pd_40">
+          <div>
+            <div class="title">
+              {{ $t("home.home8") }}
+            </div>
+            <p>${{ rewardInfo.unclaimed }}</p>
+          </div>
+          <div class="flex1-tr">
+            <span class="icon-wrap">
+              <i class="iconfont icon-dailingjiangli"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="right pd_40">
+        <div class="title">
+          Farm
+          <span class="more">
+            {{ $t("home.home9") }}
+            <i class="el-icon-arrow-right"></i>
+          </span>
+        </div>
+        <div class="farm-list">
+          <div class="farm-item" v-for="item in farmList" :key="item.farmHash">
+            <farm-symbol
+              class="farm-symbol"
+              :imgList="item.logoList"
+              :name="item.name"
+            ></farm-symbol>
+            <div class="farm-info">
+              <div>
+                <div class="label">APR</div>
+                <p class="value">{{ item.apr }}%</p>
+              </div>
+              <div>
+                <div class="label">{{ $t("home.home10") }}</div>
+                <p class="value">{{ item.syrupTokenSymbol }}</p>
+              </div>
+            </div>
+            <div class="handle">{{ $t("home.home11") }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-bottom pd_40 flex-center">
+      <div class="info-item">
+        <p class="label">{{ $t("home.home12") }}</p>
+        <p class="value">${{ txInfo.amount }}</p>
+      </div>
+      <div class="info-item">
+        <p class="label">{{ $t("home.home13") }}</p>
+        <p class="value">{{ txInfo.count }}</p>
+      </div>
+      <div class="info-item">
+        <p class="label">{{ $t("home.home14") }}</p>
+        <p class="value">${{ txInfo.fee }}</p>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import FarmSymbol from "@/views/farm/FarmSymbol.vue";
+import { listen, unListen } from "@/api/websocket";
+import config from "@/config";
+import { genId, divisionDecimals } from "@/api/util";
+
+const url = config.WS_URL;
+
+export default {
+  name: "Home",
+  components: {
+    FarmSymbol
+  },
+  props: {},
+  data() {
+    return {
+      loading: null,
+      overviewData: {},
+      rewardInfo: {},
+      farmList: [],
+      txInfo: {}
+    };
+  },
+  mounted() {
+    this.loading = this.$loading({
+      // lock: true,
+      // text: "Loading",
+      // spinner: "el-icon-loading",
+      background: "rgba(0, 0, 0, 0.7)"
+    });
+    this.getOverview();
+    this.getRewardInfo();
+    this.getFarmInfo();
+    this.getTxInfo();
+  },
+  methods: {
+    getOverview() {
+      const channel = "mainAssetInfo";
+      const params = {
+        method: channel
+      };
+      listen({
+        url,
+        channel,
+        params: {
+          cmd: true,
+          channel: "cmd:" + JSON.stringify(params)
+        },
+        success: data => {
+          console.log(data, "mainAssetInfo");
+          const decimal = data.decimals;
+          this.overviewData = {
+            priceUSD: data.priceUSD,
+            circulation: divisionDecimals(data.circulation, decimal),
+            destroyed: divisionDecimals(data.destroyed, decimal),
+            totalAmount: divisionDecimals(data.totalAmount, decimal)
+          };
+          this.loading.close();
+        }
+      });
+    },
+    getRewardInfo() {
+      const channel = "rewardSummary";
+      const params = {
+        method: channel,
+        id: genId()
+      };
+      listen({
+        url,
+        channel,
+        params: {
+          cmd: true,
+          channel: "cmd:" + JSON.stringify(params)
+        },
+        success: data => {
+          console.log(data, "---reward");
+          this.rewardInfo = data;
+        }
+      });
+    },
+    getFarmInfo() {
+      const channel = "farmPage";
+      const params = {
+        method: channel,
+        id: genId(),
+        params: {
+          pageIndex: 1,
+          pageSize: 3,
+          orderby: "apr"
+        }
+      };
+      listen({
+        url,
+        channel,
+        params: {
+          cmd: true,
+          channel: "cmd:" + JSON.stringify(params)
+        },
+        success: data => {
+          console.log(data, "---farm");
+          data.map(v => {
+            v.logoList = v.logo2 ? [v.logo, v.logo2] : [v.logo];
+            v.stakeAmount = 0;
+            v.stakeUSD = 0;
+            v.pendingRewardUSD = 0;
+            v.pendingReward = 0;
+          });
+          this.farmList = data;
+        }
+      });
+    },
+    getTxInfo() {
+      const channel = "tradingVolume";
+      listen({
+        url,
+        channel,
+        params: {
+          cmd: false,
+          channel
+        },
+        success: data => {
+          console.log(data, "---tx");
+          this.txInfo = data;
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style lang="scss">
+.home {
+  padding-bottom: 60px;
+  margin-top: -15px;
+  .lh_1 {
+    line-height: 1;
+  }
+  .pd_40 {
+    padding: 40px;
+    background-color: #fff;
+    border-radius: 20px;
+  }
+  .title {
+    font-size: 20px;
+    line-height: 1;
+    margin-bottom: 28px;
+    font-weight: 600;
+  }
+  .label {
+    font-size: 16px;
+    color: #7e87c2;
+  }
+  .info-item {
+    flex: 1;
+    text-align: center;
+  }
+  .value {
+    font-size: 24px;
+    margin-top: 5px;
+  }
+  .overview-total {
+    font-size: 30px;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .info-top {
+    height: 200px;
+  }
+  .info-middle {
+    margin: 40px 0;
+    display: flex;
+    .left {
+      margin-right: 40px;
+      width: 500px;
+      .left-top,
+      .left-bottom {
+        display: flex;
+        height: 177px;
+        p {
+          font-size: 30px;
+          line-height: 1;
+          font-weight: 600;
+        }
+        .flex1-tr {
+          flex: 1;
+          text-align: right;
+        }
+        .iconfont {
+          font-size: 80px;
+          color: #d7dcfc;
+        }
+      }
+      .left-top {
+        margin-bottom: 40px;
+      }
+      .left-bottom {
+        .icon-wrap {
+          font-size: 90px;
+          transform: rotate(30deg);
+          display: inline-block;
+        }
+      }
+    }
+    .right {
+      flex: 1;
+      height: 394px;
+      overflow: hidden;
+      .title {
+        position: relative;
+        .more {
+          position: absolute;
+          right: 0;
+          top: 0;
+          color: #4a5ef2;
+          font-size: 16px;
+          cursor: pointer;
+          font-weight: 400;
+        }
+      }
+      .farm-list {
+        height: 240px;
+        overflow: auto;
+      }
+      .farm-item {
+        margin-top: 32px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        &:first-child {
+          margin-top: 0;
+        }
+        .farm-symbol {
+          width: 285px;
+        }
+        .farm-info {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          height: 100%;
+          & > div {
+            flex: 1;
+          }
+          .label {
+            font-size: 14px;
+          }
+          .value {
+            font-size: 18px;
+            font-weight: 600;
+          }
+        }
+        .handle {
+          color: #4a5ef2;
+          margin-right: 20px;
+        }
+      }
+    }
+  }
+  .info-bottom {
+    .value {
+      line-height: 1;
+      margin-top: 10px;
+    }
+  }
+}
+</style>

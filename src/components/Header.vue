@@ -16,16 +16,20 @@
         <el-menu-item index="trading">交易</el-menu-item>
         <el-menu-item index="liquidity">流动性</el-menu-item>
         <el-menu-item index="farm">Farm</el-menu-item>
-        <el-menu-item index="info">Info</el-menu-item>
+        <!-- <el-menu-item index="info">Info</el-menu-item> -->
       </el-menu>
     </div>
     <div class="account-wrap">
-      <div class="asset-icon">
+      <div class="asset-icon" v-if="address">
         <i class="iconfont icon-qianbao" @click="toAsset"></i>
       </div>
       <div class="account">
         <!--<i class="el-icon-s-finance"></i>-->
-        <div class="connection" v-if="!address" @click="walletDialog = true">
+        <div
+          class="connection"
+          v-if="!address"
+          @click="showConnectDialog(true)"
+        >
           连接钱包
         </div>
         <div v-else @click="manageAccount = true">
@@ -37,9 +41,10 @@
       title="Connect to a wallet"
       custom-class="connect-dialog"
       :show-close="false"
-      v-model="walletDialog"
+      v-model="showConnect"
+      @closed="showConnectDialog(false)"
     >
-      <div class="list" v-if="!initialAccount">
+      <div class="list">
         <div
           class="connect-btn"
           v-for="(item, index) in providerList"
@@ -60,11 +65,18 @@
       <div class="content">
         <div class="top">
           <span>{{ superLong(address, 9) }}</span>
-          <span><i class="el-icon-copy-document"></i></span>
-          <span><i class="el-icon-copy-document"></i></span>
+          <span><i class="iconfont icon-fuzhi"></i></span>
+          <span>
+            <i
+              class="iconfont icon-tiaozhuanlianjie"
+              style="font-size: 29px"
+            ></i>
+          </span>
         </div>
         <div class="bottom tc">
-          <el-button type="primary">{{ $t("public.public7") }}</el-button>
+          <el-button type="primary" @click="disconnectProvider">
+            {{ $t("public.public7") }}
+          </el-button>
         </div>
       </div>
     </el-dialog>
@@ -72,37 +84,66 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs, ref, watch } from "vue";
-import { superLong } from "@/api/util";
-import metamaskLogo from "@/assets/img/metamask.svg";
-import naboxLogo from "@/assets/img/nabox-wallet.svg";
+import {
+  defineComponent,
+  reactive,
+  toRefs,
+  ref,
+  watch,
+  computed,
+  onMounted
+} from "vue";
+import { superLong, getCurrentAccount } from "@/api/util";
 import useEthereum, { providerList } from "@/hooks/useEthereum";
 import { useRouter, useRoute } from "vue-router";
+import { useStore } from "vuex";
 
 export default defineComponent({
   name: "Header",
-  props: {
-    /*msg: {
-        type: String,
-        required: true
-      }*/
-  },
   setup() {
-    const { address, chainId, provider, connect } = useEthereum();
-    console.log(address, 456)
-    const walletDialog = ref(false);
+    const store = useStore();
+    console.log(store, 66);
+    // const showConnect = store.state.showConnect;
+    const { address, initProvider, connect, disconnect } = useEthereum();
+    // console.log(address.value, 4444)
+    setTimeout(() => {
+      initProvider(); // 不延迟有时刷新会拿不到ethereum.selectedAddress???
+    }, 500);
+    watch(
+      () => address.value,
+      val => {
+        if (val) {
+          // console.log(window.ethereum.selectedAddress);
+          // const currentAccount = getCurrentAccount(val.value);
+          // console.log(val, currentAccount, 6);
+          store.commit("setCurrentAddress", val);
+        }
+      },
+      {
+        immediate: true
+      }
+    );
+    // console.log(address, 456);
     const manageAccount = ref(false);
-
+    const showConnect = computed(() => store.state.showConnect);
+    function showConnectDialog(state: boolean) {
+      store.commit("changeConnectShow", state);
+    }
     async function connectProvider(provider: string) {
-      await connect(provider);
-      walletDialog.value = false;
+      try {
+        await connect(provider);
+      } catch (e) {
+        //
+      }
+      store.commit("changeConnectShow", false);
+    }
+    function disconnectProvider() {
+      disconnect();
+      manageAccount.value = false;
     }
     const router = useRouter();
     const route = useRoute();
-    // console.log(route, 465, route.name, route.fullPath);
-    // const initaialRoute = route.name || "home";
     const activeIndex = ref("");
-    // console.log(address, 456)
     watch(
       () => route.path,
       val => {
@@ -115,15 +156,14 @@ export default defineComponent({
       });
     }
     return {
-      providerList,
-      walletDialog,
-      manageAccount,
-      connectProvider,
-      activeIndex,
-      metamaskLogo,
-      naboxLogo,
       address,
-      connect,
+      showConnect,
+      showConnectDialog,
+      providerList,
+      connectProvider,
+      disconnectProvider,
+      manageAccount,
+      activeIndex,
       toAsset
     };
   },
@@ -134,13 +174,6 @@ export default defineComponent({
     };
   },
   mounted() {
-    /* this.metamask = window.ethereum;
-    if (this.metamask) {
-      this.account = window.ethereum.selectedAddress;
-      this.$store.dispatch("setAccount", this.account);
-    } else {
-      this.hasMetaMask = false;
-    } */
   },
   methods: {
     handleSelect(key: string) {
@@ -153,7 +186,6 @@ export default defineComponent({
 
     toUrl(name: string, url = "") {
       if (url) {
-        //let newUrl = EXPLORER_URL + 'address/info?address=' + name;
         window.open(url);
       } else {
         this.$router.push({ name: name });
@@ -193,9 +225,6 @@ export default defineComponent({
         &:hover {
           opacity: 0.65;
         }
-      }
-      .is-active {
-        /* border-bottom: 0; */
       }
     }
   }
@@ -282,7 +311,6 @@ export default defineComponent({
         i {
           color: #4a5ef2;
           font-size: 34px;
-          font-weight: 600;
           cursor: pointer;
           margin-left: 20px;
         }

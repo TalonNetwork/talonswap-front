@@ -17,12 +17,12 @@ export default defineComponent({
   },
   props: {},
   setup: () => {
-    const showOverview = ref(false)
+    const showOverview = ref(false);
     function toggleExpand() {
-      showOverview.value = !showOverview.value
+      showOverview.value = !showOverview.value;
     }
     return { showOverview, toggleExpand };
-  },
+  }
 });
 </script>
 

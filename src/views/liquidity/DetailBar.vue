@@ -45,7 +45,7 @@ export default defineComponent({
       }
     }
   }
-  ::v-deep.el-input {
+  :deep(.el-input) {
     border: 1px solid #e4efff;
   }
 }

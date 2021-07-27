@@ -8,7 +8,6 @@ interface State {
   address: string | null;
   chainId: string;
   networkError: string;
-  provider: any
 }
 
 
@@ -23,27 +22,34 @@ export const providerList = [
   // { name: "OKEx Wallet", src: OKEx, provider: OKExProvier },
 ]
 
+export function getProvider(type?: string) {
+  if (type) return window[type]
+  const providerType = isMobile ? MetaMaskProvider : localStorage.getItem("providerType");
+  return providerType ? window[providerType] : null
+}
+
 export default function useEthereum() {
   const state: State = reactive({
     address: "",
     chainId: "",
-    networkError: "",
-    provider: null
+    networkError: ""
   });
-  const providerType = isMobile ? MetaMaskProvider : localStorage.getItem("providerType");
-  // let provider: Web3Provider | null;
-  if (providerType) {
-    state.provider = window[providerType];
-    state.address = window[providerType].selectedAddress;
-    listenAccountChange();
-    listenNetworkChange();
-  }
 
+  function initProvider() {
+    const provider = getProvider()
+    if (provider) {
+      state.address = provider.selectedAddress;
+      console.log(state.address, 8)
+      listenAccountChange();
+      listenNetworkChange();
+    }
+  }
+  
   // 监听插件账户变动
   function listenAccountChange() {
-    state.provider.on("accountsChanged", (accounts: string) => {
-      console.log(accounts, "=======accountsChanged", providerType);
-      if (!providerType) return;
+    const provider = getProvider()
+    provider?.on("accountsChanged", (accounts: string) => {
+      console.log(accounts, "=======accountsChanged");
       if (accounts.length) {
         state.address = accounts[0];
       } else {
@@ -54,9 +60,9 @@ export default function useEthereum() {
 
   // 监听插件网络变动
   function listenNetworkChange() {
-    state.provider.on("chainChanged", (chainId: string) => {
-      console.log(chainId, "=======chainId", providerType);
-      if (!providerType) return;
+    const provider = getProvider()
+    provider?.on("chainChanged", (chainId: string) => {
+      console.log(chainId, "=======chainId");
       if (chainId) {
         checkNetwork(chainId);
       }
@@ -69,16 +75,23 @@ export default function useEthereum() {
 
   // 连接provider
   async function connect(providerType: string) {
-    // console.log(type, 456)
-    state.provider = window[providerType];
-    await state.provider.request({method: 'eth_requestAccounts'});
-    state.address = state.provider.selectedAddress;
+    const provider = getProvider(providerType)
+    await provider?.request({method: 'eth_requestAccounts'});
+    state.address = provider?.selectedAddress;
     localStorage.setItem("providerType", providerType);
     listenAccountChange();
     listenNetworkChange();
   }
+
+  function disconnect() {
+    localStorage.removeItem("providerType");
+    state.address = ""
+  }
+
   return {
+    initProvider,
     connect,
+    disconnect,
     ...toRefs(state)
   };
 }

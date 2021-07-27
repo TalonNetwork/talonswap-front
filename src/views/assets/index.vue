@@ -18,12 +18,9 @@
       <div class="address">
         {{ $t("assets.assets3") }}
         TalonXXXXXXXXXX
-        <i class="el-icon-copy-document"></i>
+        <i class="iconfont icon-fuzhi"></i>
       </div>
-      <i
-        class="el-icon-circle-plus-outline"
-        @click="showAssetManage = true"
-      ></i>
+      <i class="iconfont icon-tianjia" @click="showAssetManage = true"></i>
     </div>
     <el-table :data="tableData" height="375">
       <el-table-column width="50px"></el-table-column>
@@ -98,15 +95,17 @@
     v-model:currentTab="currentTab"
     v-model:show="showTransfer"
     :network="network"
+    :refresh="refresh"
   ></transfer>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs, computed } from "vue";
+import { defineComponent, reactive, toRefs, computed, watch } from "vue";
 import { chainToSymbol, getIconSrc } from "@/api/util";
 import SymbolIcon from "@/components/SymbolIcon.vue";
 import AssetsManage from "./AssetsManage.vue";
 import Transfer from "./transfer/index.vue";
+import { useStore } from "vuex";
 
 export default defineComponent({
   name: "assets",
@@ -138,9 +137,24 @@ export default defineComponent({
           lock: 2,
           total: 3
         }
-      ]
+      ],
+      refresh: false
     });
     const netIcon = computed(() => getIconSrc(chainToSymbol[state.network]));
+
+    const store = useStore();
+    watch(
+      () => store.state.address,
+      val => {
+        if (val) {
+          state.refresh = true;
+        }
+        console.log(val, 8888)
+      },
+      {
+        immediate: true
+      }
+    )
 
     //过滤展示资产列表
     function filterAssets() {
@@ -250,7 +264,6 @@ export default defineComponent({
     i {
       color: #4a5ef2;
       font-size: 36px;
-      font-weight: 600;
       cursor: pointer;
       margin-left: 20px;
     }

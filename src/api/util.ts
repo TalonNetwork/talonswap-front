@@ -1,5 +1,6 @@
 import { BigNumber } from "bignumber.js";
 import copy from "copy-to-clipboard";
+import config from "@/config"
 
 interface Obj {
   [key: string]: unknown
@@ -152,3 +153,24 @@ export function getIconSrc(icon: string) {
   icon +
   ".png"
 }
+
+export function genId() {
+  return Math.floor(Math.random() * 1000);
+}
+
+export function getCurrentAccount(address: string | null): any {
+  if (!address) return null
+  const accountList = JSON.parse(localStorage.getItem("accountList") || "") || [];
+  const currentAccount = accountList.find((item: any) => {
+    return Object.keys(item.address).find(v => item.address[v].toLowerCase() === address.toLowerCase())
+  });
+  return currentAccount;
+}
+
+export const supportChainList = [
+  // { label: "NERVE", value: "NERVE", symbol: "NVT", chainId: config.chainId, assetId: 1 },
+  { label: "Ethereum", value: "Ethereum", symbol:"ETH", ropsten: "0x3",  homestead: "0x1", chainId: 101, assetId: 1 },
+  { label: "BSC", value: "BSC", symbol:"BNB", ropsten: "0x61", homestead: "0x38", chainId: 102, assetId: 1 },
+  { label: "Heco", value: "Heco", symbol:"HT", ropsten: "0x100", homestead: "0x80", chainId: 103, assetId: 1 },
+  { label: "OKExChain", value: "OKExChain", symbol:"OKT", ropsten: "0x41", homestead: "0x42", chainId: 104, assetId: 1 }
+];

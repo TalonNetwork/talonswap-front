@@ -5,20 +5,20 @@ const isProduction = process.env.NODE_ENV === "production";
 const proxyUrl =
   process.env.BUILD_ENV === "prod"
     ? "https://wallet.nerve.network/"
-    : "http://192.168.1.110:17003";
+    : "http://seeda.nuls.io:8009";
 module.exports = {
-  publicPath: process.env.NODE_ENV === "production" ? "dist/" : "/",
+  publicPath: process.env.NODE_ENV === "production" ? "/" : "/",
   configureWebpack: config => {
-    if (isProduction) {
-      config.plugins.push(
-        new CompressionWebpackPlugin({
-          algorithm: "gzip",
-          test: new RegExp("\\.(" + productionGzipExtensions.join("|") + ")$"),
-          threshold: 10240,
-          minRatio: 0.8
-        })
-      );
-    }
+    // if (isProduction) {
+    //   config.plugins.push(
+    //     new CompressionWebpackPlugin({
+    //       algorithm: "gzip",
+    //       test: new RegExp("\\.(" + productionGzipExtensions.join("|") + ")$"),
+    //       threshold: 10240,
+    //       minRatio: 0.8
+    //     })
+    //   );
+    // }
     config.plugins.push(
       new webpack.DefinePlugin({
         //定义全局变量
@@ -47,7 +47,7 @@ module.exports = {
         target: proxyUrl,
         changeOrigin: true,
         pathRewrite: {
-          "^/api": ""
+          // "^/api": ""
         }
       },
       "/test": {

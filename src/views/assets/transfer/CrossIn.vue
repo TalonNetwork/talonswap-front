@@ -4,7 +4,7 @@
       {{ $t("transfer.transfer4") + network + $t("transfer.transfer5") }}
       <span>
         {{ superLong("adhkaldgfkj46514653adfdfadf") }}
-        <i class="el-icon-position"></i>
+        <i class="iconfont icon-tiaozhuanlianjie"></i>
       </span>
     </div>
     <div class="transfer-content">

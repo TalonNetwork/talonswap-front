@@ -145,7 +145,7 @@ class WebSocketBuilder {
       case "Data":
         const data = JSON.parse(res.data);
         const handles = this.updateHandle[data.method];
-        console.log(JSON.parse(data.data), "----data----");
+        console.log(JSON.parse(data.data), "----"+ data.method +"----");
         if (handles && handles.length) {
           handles.forEach(handle => handle(JSON.parse(data.data)));
         }
@@ -192,7 +192,9 @@ export function listen(data: Params) {
       newSocket.listen(channel, params, success);
     })
   } else {
-    socket.unListen(channel); // 先取消之前的
+    if (socket.updateHandle[channel]) {
+      socket.unListen(channel); // 先取消之前的
+    }
     socket.listen(channel, params, success);
   }
 }

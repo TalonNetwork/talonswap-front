@@ -350,7 +350,8 @@ export default defineComponent({
       const tAssemble = nerve.deserializationTx(tx.hex);
       const hash = "0x" + tAssemble.getHash().toString("hex");
       const ercAddress = "0xc11D9943805e56b630A401D4bd9A29550353EFa1";
-      const pub = "0369b20002bc58c74cb6fd5ef564f603834393f53bed20c3314b4b7aba8286a7e0";
+      const pub =
+        "0369b20002bc58c74cb6fd5ef564f603834393f53bed20c3314b4b7aba8286a7e0";
       let flat = await window.ethereum.request({
         method: "eth_sign",
         params: [ercAddress, hash]
@@ -360,7 +361,7 @@ export default defineComponent({
       const r = flat.slice(0, 64);
       const s = flat.slice(64, 128);
       // const recoveryParam = flat.slice(128)
-      let signature = new Signature({r, s}).toDER("hex");
+      let signature = new Signature({ r, s }).toDER("hex");
       // signature = signature.slice(2)
 
       const signData = nerve.appSplicingPub(signature, pub);
@@ -1292,8 +1293,8 @@ export default defineComponent({
   }
 }
 .el-select__popper.el-popper[role="tooltip"] {
-  background: #5f71f5;
-  border: 0;
+  background: #5f71f5 !important;
+  border: 0 !important;
   border-radius: 10px;
   .el-select-dropdown__item {
     span {
@@ -1305,7 +1306,7 @@ export default defineComponent({
   }
   .el-popper__arrow:before {
     background: #5f71f5;
-    border: 0;
+    border: 0 !important;
   }
 }
 </style>

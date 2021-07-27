@@ -4,7 +4,8 @@ import { createStore, Store } from "vuex";
 // InjectionKey 将store安装到Vue应用程序时提供类型,将类型传递InjectionKey给useStore方法
 // 手动声明 state 类型
 export interface State {
-  account: string;
+  address: string;
+  showConnect: boolean;
 }
 
 // 定义注入类型
@@ -12,22 +13,28 @@ const key: InjectionKey<Store<State>> = Symbol();
 
 export default createStore<State>({
   state: {
-    account: ""
+    // hasTalonAddress: false,
+    address: "",
+    showConnect: false
   },
   getters: {
-    getAccount(state) {
-      return state.account;
-    }
+    // getAddress(state) {
+    //   return state.address;
+    // }
   },
   mutations: {
-    setAccount(state, data) {
-      state.account = data;
+    setCurrentAddress(state, data) {
+      // console.log(data, 7777)
+      state.address = data;
+    },
+    changeConnectShow(state, data) {
+      state.showConnect = data
     }
   },
   actions: {
-    async setAccount({ state, commit }, account) {
-      commit("setAccount", account);
-    }
+    // async setAccount({ state, commit }, account) {
+    //   commit("setAccount", account);
+    // }
   },
   modules: {}
 });
