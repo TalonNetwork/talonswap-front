@@ -1,14 +1,19 @@
 <template>
   <div class="cross-out">
     <div class="title">
-      {{ $t("transfer.transfer7") + network + $t("transfer.transfer8") }}
+      {{
+        $t("transfer.transfer7") +
+        " " +
+        father.network +
+        $t("transfer.transfer8")
+      }}
       <span>
-        {{ "adhkalfadf" }}
+        {{ superLong(father.address) }}
         <i class="iconfont icon-tiaozhuanlianjie"></i>
       </span>
     </div>
     <div class="transfer-content">
-      <custom-input></custom-input>
+      <custom-input :icon="transferAsset.symbol"></custom-input>
     </div>
     <div class="confirm-wrap">
       <el-button type="primary">{{ $t("transfer.transfer11") }}</el-button>
@@ -16,19 +21,30 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent, ref } from "vue";
 import CustomInput from "@/components/CustomInput.vue";
+import { superLong } from "@/api/util";
 export default defineComponent({
   name: "withdrawal",
+  inject: ["father"],
   components: {
     CustomInput
   },
-  props: {
-    address: String,
-    network: String
+  data() {
+    return {
+      transferAsset: {}
+    };
   },
-  setup() {
+  methods: {
+    superLong(str, len = 8) {
+      return superLong(str, len);
+    }
+  },
+  mounted() {
+    this.transferAsset = { ...this.father.transferAsset };
+    // console.log(this.father, 666);
+    // console.log(this.$attrs, 666, this.transferAsset);
   }
 });
 </script>

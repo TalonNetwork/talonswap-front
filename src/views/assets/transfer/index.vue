@@ -32,18 +32,24 @@
       </div>
     </div>
     <div class="bottom">
-      <cross-in :network="network" v-show="activeName === 'first'"></cross-in>
-      <common-transfer v-show="activeName === 'second'"></common-transfer>
+      <cross-in
+        v-show="activeName === 'first'"
+        :transferAsset="transferAsset"
+      ></cross-in>
+      <common-transfer
+        v-show="activeName === 'second'"
+        :transferAsset="transferAsset"
+      ></common-transfer>
       <withdrawal
-        :network="network"
         v-show="activeName === 'third'"
+        :transferAsset="transferAsset"
       ></withdrawal>
     </div>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref, watch } from "vue";
+import { defineComponent, ref, watch, computed } from "vue";
 import CrossIn from "./CrossIn.vue";
 import CommonTransfer from "./CommonTransfer.vue";
 import Withdrawal from "./Withdrawal.vue";
@@ -56,8 +62,8 @@ export default defineComponent({
   },
   props: {
     showTransfer: Boolean,
-    network: String,
-    currentTab: String
+    currentTab: String,
+    transferAsset: Object
   },
   setup(props, { emit }) {
     const crossInVal = ref("");
@@ -105,7 +111,6 @@ export default defineComponent({
         cursor: pointer;
       }
     }
-    
   }
   .el-tabs__item .iconfont {
     font-size: 20px;

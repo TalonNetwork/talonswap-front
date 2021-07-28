@@ -104,19 +104,27 @@ export default defineComponent({
     const store = useStore();
     console.log(store, 66);
     // const showConnect = store.state.showConnect;
-    const { address, initProvider, connect, disconnect } = useEthereum();
+    const { address, chainId, initProvider, connect, disconnect } =
+      useEthereum();
     // console.log(address.value, 4444)
-    setTimeout(() => {
-      initProvider(); // 不延迟有时刷新会拿不到ethereum.selectedAddress???
-    }, 500);
+    initProvider();
     watch(
       () => address.value,
       val => {
         if (val) {
-          // console.log(window.ethereum.selectedAddress);
-          // const currentAccount = getCurrentAccount(val.value);
-          // console.log(val, currentAccount, 6);
-          store.commit("setCurrentAddress", val);
+          const currentAccount = getCurrentAccount(val);
+          store.commit("setCurrentAddress", currentAccount);
+        }
+      },
+      {
+        immediate: true
+      }
+    );
+    watch(
+      () => chainId.value,
+      val => {
+        if (val) {
+          store.commit("changeChainId", val);
         }
       },
       {
@@ -173,8 +181,7 @@ export default defineComponent({
       // activeIndex: "home",
     };
   },
-  mounted() {
-  },
+  mounted() {},
   methods: {
     handleSelect(key: string) {
       this.toUrl(key);

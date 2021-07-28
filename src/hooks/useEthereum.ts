@@ -39,7 +39,8 @@ export default function useEthereum() {
     const provider = getProvider()
     if (provider) {
       state.address = provider.selectedAddress;
-      console.log(state.address, 8)
+      state.chainId = provider.chainId;
+      // console.log(state.address, 8)
       listenAccountChange();
       listenNetworkChange();
     }
@@ -64,7 +65,8 @@ export default function useEthereum() {
     provider?.on("chainChanged", (chainId: string) => {
       console.log(chainId, "=======chainId");
       if (chainId) {
-        checkNetwork(chainId);
+        state.chainId = provider.chainId;
+        // checkNetwork(chainId);
       }
     });
   }

@@ -173,7 +173,6 @@ export default {
           channel: "cmd:" + JSON.stringify(params)
         },
         success: data => {
-          console.log(data, "---reward");
           this.rewardInfo = data;
         }
       });
@@ -197,7 +196,6 @@ export default {
           channel: "cmd:" + JSON.stringify(params)
         },
         success: data => {
-          console.log(data, "---farm");
           data.map(v => {
             v.logoList = v.logo2 ? [v.logo, v.logo2] : [v.logo];
             v.stakeAmount = 0;
@@ -219,7 +217,6 @@ export default {
           channel
         },
         success: data => {
-          console.log(data, "---tx");
           this.txInfo = data;
         }
       });

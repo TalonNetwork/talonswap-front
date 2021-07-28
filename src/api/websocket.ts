@@ -144,8 +144,10 @@ class WebSocketBuilder {
         break;
       case "Data":
         const data = JSON.parse(res.data);
+        // console.log("method: "+ data.method, data)
         const handles = this.updateHandle[data.method];
-        console.log(JSON.parse(data.data), "----"+ data.method +"----");
+        console.log("----method----", data.method);
+        console.log("----" + data.method + "-res----", JSON.parse(data.data));
         if (handles && handles.length) {
           handles.forEach(handle => handle(JSON.parse(data.data)));
         }

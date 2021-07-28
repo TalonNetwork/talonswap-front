@@ -2,7 +2,7 @@ type EnvType = "beta" | "prod";
 
 const env = process.env.BUILD_ENV as EnvType;
 const IS_DEV = process.env.NODE_ENV === "development";
-console.log(env, 789789, process.env);
+// console.log(env, 789789, process.env);
 
 function getWSUrl(): string {
   let url;
@@ -26,16 +26,23 @@ const config = {
     API_URL: "/api",
     WS_URL,
     chainId: 5,
-    timeout
+    assetId: 1,
+    prefix: "TNVT",
+    timeout,
+    ETHNET: "ropsten",
+    feeAddress: "",
+    destroyAddress: ""
   },
   prod: {
     isBeta: false,
     API_URL: "/api",
     WS_URL,
     chainId: 9,
-    timeout
+    assetId: 1,
+    prefix: "NVT",
+    timeout,
+    ETHNET: "homestead"
   }
 };
 
 export default config[env];
-

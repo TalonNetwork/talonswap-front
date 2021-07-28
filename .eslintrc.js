@@ -22,6 +22,7 @@ module.exports = {
     "@typescript-eslint/ban-ts-comment": "off",
     trailingComma: "off",
     "prefer-const": 0,
-    "no-case-declarations": 0
+    "no-case-declarations": 0,
+    "prefer-rest-params": 0
   }
 };

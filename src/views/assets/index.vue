@@ -4,65 +4,74 @@
       <div class="top-title">{{ $t("assets.assets1") }}</div>
       <el-divider direction="vertical"></el-divider>
       <div class="l1-net flex-center">
-        <symbol-icon :icon="network"></symbol-icon>
-        <el-tooltip
-          effect="dark"
-          :content="$t('assets.assets2') + network"
-          placement="top"
-        >
-          <span class="click">{{ network }}</span>
-        </el-tooltip>
+        <template v-if="disableTx">
+          <span class="wrong-net">{{ $t("public.public14") }}</span>
+        </template>
+        <template v-else>
+          <symbol-icon :icon="network"></symbol-icon>
+          <el-tooltip
+            effect="dark"
+            :content="$t('assets.assets2') + network"
+            placement="top"
+          >
+            <span class="click">{{ network }}</span>
+          </el-tooltip>
+        </template>
       </div>
     </div>
     <div class="address-wrap flex-center">
       <div class="address">
         {{ $t("assets.assets3") }}
-        TalonXXXXXXXXXX
-        <i class="iconfont icon-fuzhi"></i>
+        {{ talonAddress }}
+        <i class="iconfont icon-fuzhi" @click="$copy(talonAddress)"></i>
       </div>
       <i class="iconfont icon-tianjia" @click="showAssetManage = true"></i>
     </div>
-    <el-table :data="tableData" height="375">
+    <el-table :data="tableData" height="480">
       <el-table-column width="50px"></el-table-column>
-      <el-table-column
-        prop="symbol"
-        :label="$t('public.public1')"
-        width="180"
-      ></el-table-column>
+      <el-table-column :label="$t('public.public1')" width="240">
+        <template v-slot="scope">
+          <div class="flex-center">
+            <symbol-icon :icon="scope.row.symbol"></symbol-icon>
+            <span>{{ scope.row.symbol }}</span>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="available"
         :label="$t('public.public2')"
         width="180"
       ></el-table-column>
       <el-table-column
-        prop="lock"
+        prop="locking"
         :label="$t('public.public3')"
+        width="180"
       ></el-table-column>
-      <el-table-column
-        prop="total"
-        :label="$t('public.public4')"
-      ></el-table-column>
+      <el-table-column :label="$t('public.public4')">
+        <template v-slot="scope">
+          {{ scope.row.number }}
+          <span class="ydy">≈${{ scope.row.valuation }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('public.public5')" align="center">
         <template v-slot="scope">
           <el-button
-            @click="inChains(scope.row)"
+            @click="transfer(scope.row, 'crossIn')"
             type="text"
             v-if="isShowCrossHandle(scope.row.source)"
           >
             {{ $t("assets.assets4") }}
           </el-button>
-          <!--              <el-button type="text" v-else disabled>-</el-button>-->
-          <el-button @click="crossLink(scope.row)" type="text">
+          <el-button @click="transfer(scope.row, 'general')" type="text">
             {{ $t("assets.assets5") }}
           </el-button>
           <el-button
-            @click="withdrawal(scope.row)"
+            @click="transfer(scope.row, 'withdrawal')"
             type="text"
             v-if="isShowCrossHandle(scope.row.source)"
           >
             {{ $t("assets.assets6") }}
           </el-button>
-          <!--              <el-button type="text" v-else disabled>-</el-button>-->
         </template>
       </el-table-column>
     </el-table>
@@ -94,18 +103,27 @@
     v-else
     v-model:currentTab="currentTab"
     v-model:show="showTransfer"
-    :network="network"
     :refresh="refresh"
   ></transfer>
 </template>
 
-<script lang="ts">
-import { defineComponent, reactive, toRefs, computed, watch } from "vue";
-import { chainToSymbol, getIconSrc } from "@/api/util";
+<script>
+import { defineComponent } from "vue";
+import {
+  chainToSymbol,
+  getIconSrc,
+  getTalonAddress,
+  divisionAndFix,
+  createRPCParams,
+  Plus,
+  Times
+} from "@/api/util";
 import SymbolIcon from "@/components/SymbolIcon.vue";
 import AssetsManage from "./AssetsManage.vue";
 import Transfer from "./transfer/index.vue";
-import { useStore } from "vuex";
+import config from "@/config";
+import { listen, unListen } from "@/api/websocket";
+const url = config.WS_URL;
 
 export default defineComponent({
   name: "assets",
@@ -115,120 +133,133 @@ export default defineComponent({
     AssetsManage,
     Transfer
   },
-  setup() {
-    const state = reactive({
+  provide() {
+    return {
+      father: this
+    };
+  },
+  watch: {
+    address: {
+      immediate: true,
+      handler(val) {
+        // console.log(val, 444)
+        if (val) {
+          this.talonAddress = getTalonAddress(val);
+          this.getList();
+          this.refresh = true;
+        }
+      }
+    }
+  },
+  computed: {
+    netIcon() {
+      return getIconSrc(chainToSymbol[this.network]);
+    },
+    network() {
+      return this.$store.getters.chain;
+    },
+    disableTx() {
+      return this.$store.getters.wrongChain;
+    },
+    currentAccount() {
+      return this.$store.state.addressInfo;
+    },
+    address() {
+      return this.$store.getters.currentAddress;
+    }
+  },
+  data() {
+    return {
       showAssetManage: false,
       selectAssets: [],
       allAssetsList: [],
       showTransfer: false,
-      network: "Ethereum",
       currentTab: "first",
-      tableData: [
-        {
-          symbol: "ETH",
-          available: 1,
-          lock: 2,
-          total: 3,
-          source: 4
+      tableData: [],
+      talonAddress: "",
+      refresh: false,
+      transferAsset: {}
+    };
+  },
+
+  methods: {
+    getList() {
+      const channel = "getAccountLedgerList";
+      const params = createRPCParams(channel);
+      params.params.push(this.talonAddress);
+      listen({
+        url,
+        channel,
+        params: {
+          cmd: true,
+          channel: "psrpc:" + JSON.stringify(params)
         },
-        {
-          symbol: "BNB",
-          available: 1,
-          lock: 2,
-          total: 3
+        success: data => {
+          data.map(item => {
+            const decimal = item.decimals;
+            item.number = divisionAndFix(item.totalBalanceStr, decimal);
+            item.locking = divisionAndFix(
+              Plus(item.timeLock, item.consensusLockStr),
+              decimal
+            );
+            item.available = divisionAndFix(item.balanceStr, decimal);
+            item.valuation = Times(item.number, item.usdPrice).toFixed(2);
+          });
+          // console.log(data, 1);
+          const sortDataByValue = [...data].sort((a, b) => {
+            // console.log(a.valuation, b.valuation);
+            return a.valuation - b.valuation > 0 ? -1 : 1;
+          });
+          const sortDataBySymbol = [...data].sort((a, b) => {
+            return a.symbol > b.symbol ? 1 : -1;
+          });
+          this.sortDataByValue = sortDataByValue;
+          this.allAssetsList = sortDataBySymbol;
+          this.filterAssets();
         }
-      ],
-      refresh: false
-    });
-    const netIcon = computed(() => getIconSrc(chainToSymbol[state.network]));
-
-    const store = useStore();
-    watch(
-      () => store.state.address,
-      val => {
-        if (val) {
-          state.refresh = true;
-        }
-        console.log(val, 8888)
-      },
-      {
-        immediate: true
-      }
-    )
-
+      });
+    },
     //过滤展示资产列表
-    function filterAssets() {
-      /* const currentAddress = this.$store.getters.getSelectAddress
-      const accountList = this.$store.state.accountList;
-      this.allAssetsList = assetSort([...accountList])
-      if (currentAddress.visiableAssets) {
-        const list = assetSort([...accountList]);
-        const res = []
-
-        // 解决线上nvt nuls不被勾选无法修改问题
-        const nerve = ETHNET === 'ropsten' ? "5-1" : "9-1"
-        const nuls = ETHNET === 'ropsten' ? "2-1" : "1-1"
-        if (currentAddress.visiableAssets.indexOf(nerve) === -1 || currentAddress.visiableAssets.indexOf(nuls) === -1) {
-          const defaultAsset = ETHNET === 'ropsten' ? ["5-1", "2-1", "5-2", "5-22"] : ["9-1", "1-1", "9-2", "9-25"]
-          const list = assetSort([...accountList]).filter(item => {
-            return defaultAsset.indexOf(item.assetKey) > -1 || Number(item.totalBalance) !== 0
+    filterAssets() {
+      // console.log(this.sortDataByValue, 66);
+      let result = [];
+      if (this.currentAccount.visiableAssets) {
+        this.sortDataByValue.map(v =>
+          this.currentAccount.visiableAssets.map(item => {
+            if (item === v.assetKey) {
+              result.push(v);
+            }
           })
-          this.selectAssets = list.map(v => v.assetKey)
-          this.accountList = list
-          //
-        } else {
-          list.map(item => {
-            currentAddress.visiableAssets.map(v => {
-              if (item.assetKey === v) {
-                res.push(item)
-              }
-            })
-          })
-          this.selectAssets = [...currentAddress.visiableAssets]
-          this.accountList = res
-        }
+        );
       } else {
-        const defaultAsset = ETHNET === 'ropsten' ? ["5-1", "2-1", "5-2", "5-22"] : ["9-1", "1-1", "9-2", "9-25"]
-        const list = assetSort([...accountList]).filter(item => {
-          return defaultAsset.indexOf(item.assetKey) > -1 || Number(item.totalBalance) !== 0
-        })
-        this.selectAssets = list.map(v => v.assetKey)
-        this.accountList = list
-      } */
-    }
+        const defaultSymbol = ["ETH", "USDT", "USDC"];
+        result = this.sortDataByValue.filter(
+          v => defaultSymbol.indexOf(v.symbol) > -1
+        );
+      }
+      this.selectAssets = result;
+      this.tableData = result;
+    },
 
-    // L1到L2
-    function inChains() {
-      state.currentTab = "first";
-      state.showTransfer = true;
-    }
-
-    // L2内部转账
-    function crossLink() {
-      //
-      state.currentTab = "second";
-      state.showTransfer = true;
-    }
-
-    // L2到L1
-    function withdrawal() {
-      //
-      state.currentTab = "third";
-      state.showTransfer = true;
-    }
-    function isShowCrossHandle(status: number) {
+    transfer(asset, type) {
+      if (type === "crossIn") {
+        // L1到L2
+        this.currentTab = "first";
+      } else if (type === "withdrawal") {
+        // L2到L1
+        this.currentTab = "third";
+      } else {
+        // L2内部转账
+        this.currentTab = "second";
+      }
+      this.showTransfer = true;
+      this.transferAsset = asset;
+      // console.log(this.transferAsset,55)
+    },
+    isShowCrossHandle(status) {
       const showArr = [4, 5, 6, 7, 8, 9];
       return showArr.indexOf(status) > -1;
     }
-    return {
-      ...toRefs(state),
-      netIcon,
-      filterAssets,
-      inChains,
-      crossLink,
-      withdrawal,
-      isShowCrossHandle
-    };
   }
 });
 </script>
@@ -268,20 +299,25 @@ export default defineComponent({
       margin-left: 20px;
     }
   }
-  .el-table::before {
-    height: 0;
-  }
-  .el-table th {
-    background-color: #4a5ef2;
-    color: #fff;
-    &:first-child {
-      border-radius: 10px 0 0 10px;
+  .el-table {
+    th .cell {
+      font-size: 16px;
     }
-    &:last-child {
-      border-radius: 0 10px 10px 0;
+    tr .cell {
+      font-size: 16px;
+      color: #333;
     }
-    .cell {
-      line-height: 35px;
+    tr .flex-center {
+      span {
+        font-weight: 600;
+        margin-left: 10px;
+      }
+    }
+    .el-button--text {
+      color: #4a5ef2;
+    }
+    .ydy {
+      color: #7e87c2;
     }
   }
 }

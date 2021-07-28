@@ -28,6 +28,13 @@
       &:hover {
         opacity: 0.7;
       }
+      &.is-disabled {
+        background-color: #a0cfff;
+        border-color: #a0cfff;
+        &:hover {
+          opacity: 1;
+        }
+      }
     }
     &.el-button--default {
       border-radius: 10px;
@@ -60,17 +67,20 @@
   .el-table::before {
     height: 0;
   }
-  .el-table th {
-    background-color: #4a5ef2;
-    color: #fff;
-    &:first-child {
-      border-radius: 10px 0 0 10px;
-    }
-    &:last-child {
-      border-radius: 0 10px 10px 0;
-    }
-    .cell {
-      line-height: 35px;
+  .el-table{
+    th {
+      background-color: #4a5ef2;
+      color: #fff;
+      &:first-child {
+        border-radius: 10px 0 0 10px;
+      }
+      &:last-child {
+        border-radius: 0 10px 10px 0;
+      }
+      .cell {
+        color: #fff;
+        line-height: 35px;
+      }
     }
   }
 }

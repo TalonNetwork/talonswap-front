@@ -12,6 +12,8 @@ const cn = {
     public10: "确认交易",
     public11: "充值金额",
     public12: "可用余额",
+    public13: "已复制到剪切板",
+    public14: "网络错误",
     
   },
   home: {
@@ -38,7 +40,7 @@ const cn = {
     assets5: "L2转账",
     assets6: "L2转至L1",
     assets7: "资产管理",
-    assets8: "输入token或合约地址",
+    assets8: "使用资产名称或ID进行查询",
   },
   transfer: {
     transfer1: "充值到L2",
@@ -52,6 +54,10 @@ const cn = {
     transfer9: "确认充值",
     transfer10: "确认转账",
     transfer11: "确认提现",
+    transfer12: "选择资产",
+    transfer13: "资产授权",
+    transfer14: "交易已发出，等待区块确认",
+    transfer15: "余额不足",
   },
   trading: {
     trading1: "订单历史",

@@ -24,6 +24,7 @@ export default defineComponent({
 
 <style lang="scss">
 .farm-item-symbol {
+  width: 265px;
   height: 100%;
   padding: 16px 0;
   display: flex;

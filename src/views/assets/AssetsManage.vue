@@ -3,6 +3,7 @@
     custom-class="add-assets-dialog"
     :title="$t('assets.assets7')"
     :show-close="false"
+    top="10vh"
     v-model="show"
     @closed="close"
   >
@@ -16,21 +17,16 @@
         :key="item.assetKey"
         @click="changeSelect(item.assetKey)"
       >
-        <img :src="item.icon" />
-        <div class="asset-base-info">
-          <div>
-            {{ item.name }}
-            <span class="font12">{{ "(" + item.originNetwork + ")" }}</span>
+        <div class="flex-center">
+          <symbol-icon :icon="item.symbol"></symbol-icon>
+          <div class="asset-base-info">
+            <div>
+              {{ item.symbol }}
+            </div>
+            <span>ID: {{ item.assetKey }}</span>
           </div>
-          <span>ID: {{ item.assetKey }}</span>
         </div>
-        <!-- <div class="circulation-network">
-          <div>{{ $t("home.home14") + ": " }}{{ item.circulationNetwork }}</div>
-        </div> -->
-        <el-checkbox
-          v-model="item.added"
-          :disabled="checkDisabled(item.assetKey)"
-        ></el-checkbox>
+        <el-checkbox v-model="item.added"></el-checkbox>
       </li>
     </ul>
     <div class="footer-wrap">
@@ -43,16 +39,18 @@
 </template>
 
 <script>
+import SymbolIcon from "@/components/SymbolIcon.vue";
 import _ from "lodash";
-import { isBeta } from "@/api/util";
 export default {
+  components: {
+    SymbolIcon
+  },
   data() {
     this.allAssetsList = [];
     return {
       show: false,
       list: [],
-      searchVal: "",
-      defaultAssets: isBeta ? ["5-1", "2-1"] : ["9-1", "1-1"]
+      searchVal: ""
     };
   },
   props: {
@@ -66,8 +64,6 @@ export default {
       default: () => []
     }
   },
-
-  components: {},
 
   watch: {
     showAssetManage: {
@@ -88,24 +84,8 @@ export default {
         const list = _.cloneDeep(this.assetList);
         list.map(item => {
           item.added = false;
-          const network = ["NULS", "NERVE"];
-          if (item.heterogeneousList && item.heterogeneousList.length) {
-            // const network = ["NULS","NERVE"]
-            item.heterogeneousList.map(v => {
-              if (v.heterogeneousChainId === 101) {
-                network.push("Ethereum");
-              } else if (v.heterogeneousChainId === 102) {
-                network.push("BSC");
-              } else if (v.heterogeneousChainId === 103) {
-                network.push("Heco");
-              } else if (v.heterogeneousChainId === 104) {
-                network.push("OKExChain");
-              }
-            });
-          }
-          item.circulationNetwork = network.join();
           this.selectAssets.map(v => {
-            if (item.assetKey === v) {
+            if (item.assetKey === v.assetKey) {
               item.added = true;
             }
           });
@@ -123,26 +103,19 @@ export default {
         this.list = this.allAssetsList.filter(v => {
           return (
             v.assetKey.indexOf(str) > -1 ||
-            v.name.toUpperCase().indexOf(str.toUpperCase()) > -1
+            v.symbol.toUpperCase().indexOf(str.toUpperCase()) > -1
           );
         });
       }
     },
     changeSelect(key) {
-      const isDefaultAsset = this.checkDisabled(key);
-      if (isDefaultAsset) return;
       this.allAssetsList.map(v => {
         if (v.assetKey === key) {
           v.added = !v.added;
         }
       });
-      // this.filter()
-    },
-    checkDisabled(key) {
-      return this.defaultAssets.indexOf(key) > -1;
     },
     close() {
-      console.log(4444)
       this.$emit("update:showAssetManage", false);
     },
     confirm() {
@@ -152,13 +125,17 @@ export default {
           select.push(v.assetKey);
         }
       });
-      const addressInfo = [...this.$store.state.addressInfo];
-      addressInfo.map(v => {
-        if (v.selection) {
+      const currentAccount = this.$store.state.addressInfo;
+      currentAccount.visiableAssets = select;
+      const accountList = JSON.parse(localStorage.getItem("accountList") || "") || [];
+      accountList.map(v => {
+        if (v.pub === currentAccount.pub) {
           v.visiableAssets = select;
         }
       });
-      this.$store.commit("setAddressInfo", addressInfo);
+      localStorage.setItem("accountList", JSON.stringify(accountList));
+
+      this.$store.commit("setAddressInfo", currentAccount);
       this.$emit("addAssets");
       this.close();
     }
@@ -168,31 +145,54 @@ export default {
 <style lang="scss">
 .add-assets-dialog {
   width: 470px !important;
+  .el-input {
+    .el-input__inner {
+      border-radius: 10px;
+      line-height: 58px;
+      height: 58px;
+    }
+    margin-bottom: 15px;
+  }
   .list-wrap {
-    max-height: 55vh;
+    max-height: 50vh;
     overflow-y: auto;
     li {
       display: flex;
       align-items: center;
-      height: 50px;
-      border-bottom: 1px solid #dfe4ef;
+      justify-content: space-between;
+      height: 66px;
+      padding: 9px 0;
+      /* border-bottom: 1px solid #dfe4ef; */
       cursor: pointer;
       img {
-        height: 28px;
-        margin-right: 10px;
+        width: 48px;
+        height: 48px;
+        margin-right: 15px;
       }
       .asset-base-info {
-        width: 120px;
-      }
-      .circulation-network {
-        flex: 1;
-        margin-right: 10px;
+        /* width: 120px; */
         div {
-          margin-top: 20px;
+          font-size: 18px;
+          font-weight: 600;
+        }
+        span {
+          font-size: 14px;
+          color: #7E87C2;
         }
       }
       .el-checkbox {
         margin-right: 10px;
+        .el-checkbox__inner {
+          width: 20px;
+          height: 20px;
+          &::after {
+            height: 10px;
+            left: 6px;
+            top: 2px;
+            font-weight: 600;
+            width: 5px;
+          }
+        }
       }
     }
   }
@@ -212,11 +212,6 @@ export default {
       li {
         .asset-base-info {
           width: 2rem;
-        }
-        .circulation-network {
-          div {
-            margin-top: 0;
-          }
         }
         .el-checkbox {
           margin-right: 0;

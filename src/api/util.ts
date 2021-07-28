@@ -1,14 +1,17 @@
 import { BigNumber } from "bignumber.js";
 import copy from "copy-to-clipboard";
-import config from "@/config"
+import config from "@/config";
 
 interface Obj {
-  [key: string]: unknown
+  [key: string]: unknown;
 }
 
-type Big = BigNumber | string | number
+type Big = BigNumber | string | number;
 
-export function isValidKey(key: string | number | symbol , object: Obj): key is keyof typeof object {
+export function isValidKey(
+  key: string | number | symbol,
+  object: Obj
+): key is keyof typeof object {
   return key in object;
 }
 
@@ -65,19 +68,19 @@ export const divisionDecimals = (nu: string, decimals: number) => {
 };
 
 export function divisionAndFix(nu: string, decimals: string | number, fix = 6) {
-  const newFix = fix ? fix : Number(decimals)
-  const str = new BigNumber(Division(nu, Power(decimals))).toFixed(newFix)
+  const newFix = fix ? fix : Number(decimals);
+  const str = new BigNumber(Division(nu, Power(decimals))).toFixed(newFix);
   const pointIndex = str.indexOf(".");
   let lastStr = str.substr(str.length - 1);
   let lastIndex = str.length;
-  while(lastStr === "0" && lastIndex >= pointIndex) {
+  while (lastStr === "0" && lastIndex >= pointIndex) {
     lastStr = str.substr(lastIndex - 1, 1);
     if (lastStr === "0") {
-      lastIndex = lastIndex -1
+      lastIndex = lastIndex - 1;
     }
   }
-  lastIndex = str.substr(lastIndex - 1 , 1) === "." ? lastIndex -1 : lastIndex
-  return str.substring(0,lastIndex)
+  lastIndex = str.substr(lastIndex - 1, 1) === "." ? lastIndex - 1 : lastIndex;
+  return str.substring(0, lastIndex);
 }
 
 /**
@@ -149,9 +152,7 @@ export const chainToSymbol = {
 };
 
 export function getIconSrc(icon: string) {
-  return "https://nuls-cf.oss-us-west-1.aliyuncs.com/icon/" +
-  icon +
-  ".png"
+  return "https://nuls-cf.oss-us-west-1.aliyuncs.com/icon/" + icon + ".png";
 }
 
 export function genId() {
@@ -159,18 +160,190 @@ export function genId() {
 }
 
 export function getCurrentAccount(address: string | null): any {
-  if (!address) return null
-  const accountList = JSON.parse(localStorage.getItem("accountList") || "") || [];
+  if (!address) return null;
+  const accountList =
+    JSON.parse(localStorage.getItem("accountList") || "") || [];
   const currentAccount = accountList.find((item: any) => {
-    return Object.keys(item.address).find(v => item.address[v].toLowerCase() === address.toLowerCase())
+    return Object.keys(item.address).find(
+      v => item.address[v].toLowerCase() === address.toLowerCase()
+    );
   });
   return currentAccount;
 }
 
+export function getTalonAddress(address: string): string {
+  const account = getCurrentAccount(address);
+  return account?.address.Talon;
+}
+
 export const supportChainList = [
   // { label: "NERVE", value: "NERVE", symbol: "NVT", chainId: config.chainId, assetId: 1 },
-  { label: "Ethereum", value: "Ethereum", symbol:"ETH", ropsten: "0x3",  homestead: "0x1", chainId: 101, assetId: 1 },
-  { label: "BSC", value: "BSC", symbol:"BNB", ropsten: "0x61", homestead: "0x38", chainId: 102, assetId: 1 },
-  { label: "Heco", value: "Heco", symbol:"HT", ropsten: "0x100", homestead: "0x80", chainId: 103, assetId: 1 },
-  { label: "OKExChain", value: "OKExChain", symbol:"OKT", ropsten: "0x41", homestead: "0x42", chainId: 104, assetId: 1 }
+  {
+    label: "Ethereum",
+    value: "Ethereum",
+    symbol: "ETH",
+    ropsten: "0x3",
+    homestead: "0x1",
+    chainId: 101,
+    assetId: 1
+  },
+  {
+    label: "BSC",
+    value: "BSC",
+    symbol: "BNB",
+    ropsten: "0x61",
+    homestead: "0x38",
+    chainId: 102,
+    assetId: 1
+  },
+  {
+    label: "Heco",
+    value: "Heco",
+    symbol: "HT",
+    ropsten: "0x100",
+    homestead: "0x80",
+    chainId: 103,
+    assetId: 1
+  },
+  {
+    label: "OKExChain",
+    value: "OKExChain",
+    symbol: "OKT",
+    ropsten: "0x41",
+    homestead: "0x42",
+    chainId: 104,
+    assetId: 1
+  }
 ];
+
+export function createRPCParams(method: string) {
+  return {
+    jsonrpc: "2.0",
+    id: genId(),
+    method,
+    params: [config.chainId]
+  };
+}
+
+export function debounce(fn: any, delay: number) {
+  let timer: any;
+  return function () {
+    const args = arguments;
+    if (timer) {
+      clearTimeout(timer);
+    }
+    timer = setTimeout(() => {
+      // @ts-ignore
+      fn.apply(this, args);
+      timer = null;
+    }, delay);
+  };
+}
+
+export const isBeta = config.ETHNET === "ropsten";
+
+const NERVEOrigin = isBeta
+  ? "http://beta.scan.nerve.network"
+  : "https://scan.nerve.network";
+const NULSOrigin = isBeta ? "http://beta.nulscan.io" : "https://nulscan.io";
+const ETHOrigin = isBeta
+  ? "https://ropsten.etherscan.io"
+  : "https://etherscan.io";
+const BNBOrigin = isBeta
+  ? "https://testnet.bscscan.com"
+  : "https://bscscan.com";
+/* const HTOrigin = isBeta
+  ? "https://testnet.hecoinfo.com"
+  : "https://hecoinfo.com";
+const OKOrigin = isBeta
+  ? "https://www.oklink.com/okexchain-test"
+  : "https://www.oklink.com/okexchain";
+const HarmonyOrigin = isBeta
+  ? "https://explorer.pops.one"
+  : "https://explorer.harmony.one";
+const PolygonOrigin = isBeta
+  ? "https://mumbai.polygonscan.com"
+  : "https://polygonscan.com";
+const KCCOrigin = isBeta
+  ? "https://scan-testnet.kcc.network"
+  : "https://explorer.kcc.io"; */
+
+export const _networkInfo = {
+  NULS: {
+    name: "NULS",
+    chainId: isBeta ? 2 : 1,
+    origin: NULSOrigin,
+    color: "#00da9d",
+    mainAsset: "NULS"
+  },
+  NERVE: {
+    name: "NERVE",
+    chainId: isBeta ? 5 : 9,
+    origin: NERVEOrigin,
+    color: "#56bff3",
+    mainAsset: "NERVE"
+  },
+  Ethereum: {
+    name: "Ethereum",
+    chainId: 101,
+    origin: ETHOrigin,
+    color: "#5e5e5e",
+    mainAsset: "ETH",
+    ropsten: "0x3",
+    homestead: "0x1"
+  },
+  BSC: {
+    name: "BSC",
+    chainId: 102,
+    origin: BNBOrigin,
+    color: "#e7b941",
+    mainAsset: "BNB",
+    ropsten: "0x61",
+    homestead: "0x38"
+  },
+  /* Heco: {
+    name: "Heco",
+    chainId: 103,
+    origin: HTOrigin,
+    color: "#336adb",
+    mainAsset: "HT",
+    ropsten: "0x100",
+    homestead: "0x80"
+  },
+  OKExChain: {
+    name: "OKExChain",
+    chainId: 104,
+    origin: OKOrigin,
+    color: "#4883ed",
+    mainAsset: "OKT",
+    ropsten: "0x41",
+    homestead: "0x42"
+  },
+  Harmony: {
+    name: "Harmony",
+    chainId: 105,
+    origin: HarmonyOrigin,
+    color: "#5cc9c0",
+    mainAsset: "ONE",
+    ropsten: "0x6357d2e0",
+    homestead: "0x63564c40"
+  },
+  Polygon: {
+    name: "Polygon",
+    chainId: 106,
+    origin: PolygonOrigin,
+    color: "#7449df",
+    mainAsset: "MATIC",
+    ropsten: "0x13881",
+    homestead: "0x89"
+  },
+  KCC: {
+    name: "KCC",
+    chainId: 107,
+    origin: KCCOrigin,
+    color: "#66ac90",
+    mainAsset: "KCS",
+    ropsten: "0x142",
+    homestead: "0x141"
+  } */
+};

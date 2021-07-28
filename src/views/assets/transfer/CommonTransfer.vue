@@ -4,7 +4,7 @@
       <el-input :placeholder="$t('transfer.transfer6')"></el-input>
     </div>
     <div class="transfer-content">
-      <custom-input></custom-input>
+      <custom-input :icon="transferAsset.symbol"></custom-input>
     </div>
     <div class="confirm-wrap">
       <el-button type="primary">{{ $t("transfer.transfer10") }}</el-button>
@@ -12,20 +12,26 @@
   </div>
 </template>
 
-<script lang="ts">
+<script>
 import { defineComponent, ref } from "vue";
 import CustomInput from "@/components/CustomInput.vue";
 // import { superLong } from "@/api/util";
 export default defineComponent({
   name: "commonTransfer",
+  inject: ["father"],
   components: {
     CustomInput
   },
-  props: {
-    address: String,
-    network: String
+  data() {
+    return {
+      transferAsset: {}
+    };
   },
-  setup() {}
+  mounted() {
+    this.transferAsset = { ...this.father.transferAsset };
+    // console.log(this.father, 666);
+    // console.log(this.$attrs, 666, this.transferAsset);
+  }
 });
 </script>
 
