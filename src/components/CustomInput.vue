@@ -25,6 +25,7 @@
         </template>
       </div>
     </div>
+    <span class="error-tip" v-if="errorTip">{{ errorTip }}</span>
     <el-dialog
       custom-class="select-assets-dialog"
       :title="$t('transfer.transfer12')"
@@ -67,7 +68,8 @@ export default {
       default: () => []
     },
     inputVal: String,
-    balance: String
+    balance: String,
+    errorTip: String
   },
   components: {
     SymbolIcon
@@ -134,10 +136,21 @@ export default {
   border: 1px solid #e3eeff;
   border-radius: 15px;
   padding: 15px 20px;
+  position: relative;
+  .error-tip {
+    position: absolute;
+    left: 0;
+    top: 98px;
+    font-size: 13px;
+    color: #f56c6c;
+  }
   .info {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     color: #7e87c2;
     font-size: 12px;
+    & span:first-child {
+      font-size: 14px;
+    }
   }
   .el-input {
     margin-right: 20px;
@@ -145,8 +158,11 @@ export default {
     }
   }
   .inner {
-    .el-input {
+    :deep(.el-input) {
       flex: 1;
+      .el-input__inner {
+        font-size: 20px;
+      }
     }
   }
   .select-wrap {

@@ -14,6 +14,7 @@ const cn = {
     public12: "可用余额",
     public13: "已复制到剪切板",
     public14: "网络错误",
+    public15: "手续费: ",
     
   },
   home: {
@@ -58,6 +59,9 @@ const cn = {
     transfer13: "资产授权",
     transfer14: "交易已发出，等待区块确认",
     transfer15: "余额不足",
+    transfer16: "地址错误",
+    transfer17: "金额必须为数字并且小数点后最多位数为",
+    transfer18: "手续费不足",
   },
   trading: {
     trading1: "订单历史",

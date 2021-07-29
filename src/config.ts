@@ -28,10 +28,11 @@ const config = {
     chainId: 5,
     assetId: 1,
     prefix: "TNVT",
+    symbol: "NVT",
     timeout,
     ETHNET: "ropsten",
-    feeAddress: "",
-    destroyAddress: ""
+    feeAddress: "TNVTdTSPP9oSLvdtVSVFiUYCvXJdj1ZA1nyQU", //提现费用地址
+    destroyAddress: "TNVTdTSPGwjgRMtHqjmg8yKeMLnpBpVN5ZuuY" // 黑洞地址
   },
   prod: {
     isBeta: false,
@@ -40,8 +41,11 @@ const config = {
     chainId: 9,
     assetId: 1,
     prefix: "NVT",
+    symbol: "NVT",
     timeout,
-    ETHNET: "homestead"
+    ETHNET: "homestead",
+    feeAddress: "",
+    destroyAddress: ""
   }
 };
 

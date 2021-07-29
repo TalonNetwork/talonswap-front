@@ -1,5 +1,9 @@
 <template>
-  <div class="cross-in">
+  <div
+    class="cross-in"
+    v-loading="loading"
+    element-loading-background="rgba(255, 255, 255, 0.8)"
+  >
     <div class="title">
       {{
         $t("transfer.transfer4") +
@@ -18,6 +22,7 @@
         :icon="transferAsset.symbol"
         :assetList="assetsList"
         :balance="balance"
+        :errorTip="amountErrorTip"
         @selectAsset="selectAsset"
         @max="max"
       ></custom-input>
@@ -27,7 +32,7 @@
         type="primary"
         v-if="!needAuth"
         @click="sendTx"
-        :disabled="disableTransfer || noEnoughBalance"
+        :disabled="disableTransfer"
       >
         {{
           noEnoughBalance ? $t("transfer.transfer15") : $t("transfer.transfer9")
@@ -53,14 +58,25 @@ export default defineComponent({
   inject: ["father"],
   watch: {
     amount(val) {
-      if (val && this.transferAsset) {
-        // this.getFee();
-      }
-    },
-    transferAsset: {
-      handler(val) {
-        if (val && this.amount) {
-          // this.getFee();
+      if (val) {
+        let decimals = this.transferAsset.decimals || 0;
+        let patrn = "";
+        if (!decimals) {
+          patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d])?$");
+        } else {
+          patrn = new RegExp(
+            "^([1-9][\\d]{0,20}|0)(\\.[\\d]{0," + decimals + "})?$"
+          );
+        }
+        if (!patrn.exec(val)) {
+          this.amountErrorTip = this.$t("transfer.transfer17") + decimals;
+        } else if (
+          !Number(this.balance) ||
+          Minus(this.balance, this.amount) < 0
+        ) {
+          this.amountErrorTip = this.$t("transfer.transfer15");
+        } else {
+          this.amountErrorTip = "";
         }
       }
     }
@@ -68,17 +84,24 @@ export default defineComponent({
   data() {
     this.heterogeneousInfo = null; // 异构链信息
     return {
+      loading: false,
       transferAsset: {},
       amount: "",
       balance: 0,
       fee: 0,
       needAuth: false, // token资产是否需要授权
-      assetsList: []
+      assetsList: [],
+      amountErrorTip: ""
     };
   },
   computed: {
     disableTransfer() {
-      return !Number(this.fee) || !Number(this.amount) || !Number(this.balance);
+      return !!(
+        !Number(this.fee) ||
+        !Number(this.amount) ||
+        !Number(this.balance) ||
+        this.amountErrorTip
+      );
     },
     // 余额不足
     noEnoughBalance() {
@@ -93,7 +116,7 @@ export default defineComponent({
   },
   methods: {
     filterAssets() {
-      console.log(123465,this.father);
+      // console.log(123465,this.father);
       const chain = _networkInfo[this.father.network];
       this.assetsList = this.father.allAssetsList.filter(v => {
         return v.heterogeneousList?.filter(item => {
@@ -145,7 +168,7 @@ export default defineComponent({
       this.fee = await this.transfer.getGasPrice(
         this.heterogeneousInfo.isToken
       );
-      console.log(this.fee, 444);
+      // console.log(this.fee, 444);
     },
     async getBalance() {
       const { contractAddress, isToken } = this.heterogeneousInfo;
@@ -158,7 +181,7 @@ export default defineComponent({
       } else {
         this.balance = await this.transfer.getEthBalance(this.father.address);
       }
-      console.log(this.balance, 666222);
+      // console.log(this.balance, "===balance===");
     },
     superLong(str, len = 8) {
       return superLong(str, len);
@@ -173,6 +196,7 @@ export default defineComponent({
       }
     },
     async approveERC20() {
+      this.loading = true;
       const { contractAddress, heterogeneousChainMultySignAddress } =
         this.heterogeneousInfo;
       try {
@@ -188,8 +212,10 @@ export default defineComponent({
           type: "warning"
         });
       }
+      this.loading = false;
     },
     async sendTx() {
+      this.loading = true;
       try {
         const { contractAddress, heterogeneousChainMultySignAddress } =
           this.heterogeneousInfo;
@@ -201,22 +227,22 @@ export default defineComponent({
           contractAddress,
           decimals: this.transferAsset.decimals
         };
-        console.log(params);
+        // console.log(params);
         const res = await this.transfer.crossIn(params);
         this.handleMsg(res);
       } catch (e) {
-        console.log(e, "transfer-error");
+        console.log(e, "crossin-transfer-error");
         this.$message({
-          message: e,
+          message: e.message || e,
           type: "warning"
         });
       }
+      this.loading = false;
     },
     handleMsg(data) {
-      console.log(data, 555);
+      // console.log(data, 555);
       if (data.success) {
         this.amount = "";
-        // this.txHash = data.msg;
         this.$message({
           message: this.$t("transfer.transfer14"),
           type: "success"

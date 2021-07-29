@@ -1,7 +1,7 @@
 import nerve from "nerve-sdk-js";
 import { ethers } from "ethers";
 import sdk from "nerve-sdk-js/lib/api/sdk";
-import { Plus, timesDecimals, Minus } from "./util";
+import { Plus, timesDecimals, Minus, createRPCParams } from "./util";
 // import { request } from "./http";
 const Signature = require("elliptic/lib/elliptic/ec/signature");
 const txsignatures = require("nerve-sdk-js/lib/model/txsignatures");
@@ -9,6 +9,9 @@ import BufferReader from "nerve-sdk-js/lib/utils/bufferreader";
 import txs from "nerve-sdk-js/lib/model/txs";
 import config from "@/config";
 import { getProvider } from "@/hooks/useEthereum";
+import { listen, unListen } from "@/api/promiseSocket";
+
+const url = config.WS_URL;
 
 export class NTransfer {
   constructor(props) {
@@ -18,8 +21,16 @@ export class NTransfer {
     this.chain = props.chain; //链网络
     this.type = props.type; //交易类型
     this.sdk = nerve;
-    const provider = getProvider();
-    this.provider = new ethers.providers.Web3Provider(provider);
+    this.provider = getProvider();
+  }
+
+  validateAddress(address) {
+    try {
+      const res = this.sdk.verifyAddress(address);
+      return res.right;
+    } catch (e) {
+      return false;
+    }
   }
 
   async getTxHex(data) {
@@ -168,16 +179,17 @@ export class NTransfer {
       nonce = await this.getNonce(transferInfo);
     }
     // const nonce = await this.getNonce(transferInfo);
+    const { chainId, assetId } = config;
     const mainAssetNonce = await this.getNonce({
       from: transferInfo.from,
-      assetsChainId: config.chainId,
-      assetsId: config.assetId
+      assetsChainId: chainId,
+      assetsId: assetId
     });
     let inputs = [];
     const totalFee = Number(Plus(transferInfo.proposalPrice, transferInfo.fee));
     if (
-      config.chainId === transferInfo.assetsChainId &&
-      config.assetId === transferInfo.assetsId
+      chainId === transferInfo.assetsChainId &&
+      assetId === transferInfo.assetsId
     ) {
       const newAmount = Number(Plus(transferInfo.amount, totalFee));
       inputs.push({
@@ -201,8 +213,8 @@ export class NTransfer {
         {
           address: transferInfo.from,
           amount: totalFee,
-          assetsChainId: config.chainId,
-          assetsId: config.assetId,
+          assetsChainId: chainId,
+          assetsId: assetId,
           nonce: mainAssetNonce,
           locked: 0
         }
@@ -222,8 +234,8 @@ export class NTransfer {
       {
         address: feeAddress, //提现费用地址
         amount: transferInfo.proposalPrice,
-        assetsChainId: config.chainId,
-        assetsId: config.assetId,
+        assetsChainId: chainId,
+        assetsId: assetId,
         locked: 0
       }
     ];
@@ -231,24 +243,37 @@ export class NTransfer {
   }
 
   async getNonce(info) {
-    try {
-      let data = {
-        chain: this.chain,
-        address: info.from,
-        chainId: info.assetsChainId,
-        assetId: info.assetsId,
-        refresh: true
-      };
-      // console.log(data);
-      // const res = await request({ url: "/wallet/address/asset", data: data });
-      // // console.log(res);
-      // if (res.code === 1000) {
-      //   return res.data.nonce;
-      // }
-      return null;
-    } catch (e) {
-      console.error(e);
-    }
+    const channel = "getAccountBalance";
+    const params = createRPCParams(channel);
+    params.params = params.params.concat([
+      info.assetsChainId,
+      info.assetsId,
+      info.from
+    ]);
+    const res = await listen({
+      url,
+      channel,
+      params: {
+        cmd: true,
+        channel: "psrpc:" + JSON.stringify(params)
+      }
+    });
+    return res.nonce;
+  }
+
+  async broadcastHex(txHex) {
+    const channel = "broadcastTx";
+    const params = createRPCParams(channel);
+    params.params = params.params.concat([txHex]);
+    const res = await listen({
+      url,
+      channel,
+      params: {
+        cmd: true,
+        channel: "psrpc:" + JSON.stringify(params)
+      }
+    });
+    return res;
   }
 }
 
@@ -264,6 +289,18 @@ const RPC_URL = {
   OKExChain: {
     ropsten: "https://exchaintestrpc.okex.org",
     homestead: "https://exchainrpc.okex.org"
+  },
+  Harmony: {
+    ropsten: "https://api.s0.b.hmny.io",
+    homestead: "https://api.harmony.one"
+  },
+  Polygon: {
+    ropsten: "https://rpc-mumbai.maticvigil.com",
+    homestead: "https://rpc-mainnet.maticvigil.com"
+  },
+  KCC: {
+    ropsten: "https://rpc-testnet.kcc.network",
+    homestead: "https://rpc-mainnet.kcc.network"
   }
 };
 
@@ -310,13 +347,23 @@ export function getGasLimit(isToken) {
 }
 
 export class ETransfer {
-  constructor() {
-    this.getProvider();
+  constructor(chain) {
+    this.getProvider(chain);
   }
 
-  getProvider() {
-    const provider = getProvider();
-    this.provider = new ethers.providers.Web3Provider(provider);
+  getProvider(chain) {
+    if (!chain) {
+      const provider = getProvider();
+      this.provider = new ethers.providers.Web3Provider(provider);
+    } else {
+      if (chain === "Ethereum") {
+        this.provider = ethers.getDefaultProvider(config.ETHNET);
+      } else {
+        this.provider = new ethers.providers.JsonRpcProvider(
+          RPC_URL[chain][config.ETHNET]
+        );
+      }
+    }
   }
 
   decodeData(data) {
@@ -663,13 +710,19 @@ export class ETransfer {
   }
 }
 
-export async function getSymbolUSD(chain) {
-  // const res = await request({
-  //   url: "/asset/main/price",
-  //   data: { chain }
-  // });
-  // if (res.code === 1000) {
-  //   return res.data;
-  // }
-  // return null;
+export async function getSymbolUSD(data = {}) {
+  const { chainId = config.chainId, assetId = config.assetId } = data;
+
+  const channel = "getBestSymbolPrice";
+  const params = createRPCParams(channel);
+  params.params = [chainId, assetId];
+  const res = await listen({
+    url,
+    channel,
+    params: {
+      cmd: true,
+      channel: "psrpc:" + JSON.stringify(params)
+    }
+  });
+  return res;
 }

@@ -96,7 +96,7 @@ class WebSocketBuilder {
   } */
 
   listen(channel: string, params: any, handle: Callback) {
-    console.log(this.ws?.readyState, 789)
+    // console.log(this.ws?.readyState, 789)
     if (this.ws?.readyState === 0) {
       setTimeout(() => {
         this.listen(channel, params, handle)

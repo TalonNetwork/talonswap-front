@@ -14,7 +14,7 @@
             :content="$t('assets.assets2') + network"
             placement="top"
           >
-            <span class="click">{{ network }}</span>
+            <span class="click font_20">{{ network }}</span>
           </el-tooltip>
         </template>
       </div>
@@ -27,7 +27,12 @@
       </div>
       <i class="iconfont icon-tianjia" @click="showAssetManage = true"></i>
     </div>
-    <el-table :data="tableData" height="480">
+    <el-table
+      :data="tableData"
+      height="480"
+      v-loading="loading"
+      element-loading-background="rgba(255, 255, 255, 0.8)"
+    >
       <el-table-column width="50px"></el-table-column>
       <el-table-column :label="$t('public.public1')" width="240">
         <template v-slot="scope">
@@ -59,16 +64,22 @@
             @click="transfer(scope.row, 'crossIn')"
             type="text"
             v-if="isShowCrossHandle(scope.row.source)"
+            :disabled="disableTx"
           >
             {{ $t("assets.assets4") }}
           </el-button>
-          <el-button @click="transfer(scope.row, 'general')" type="text">
+          <el-button
+            @click="transfer(scope.row, 'general')"
+            type="text"
+            :disabled="disableTx"
+          >
             {{ $t("assets.assets5") }}
           </el-button>
           <el-button
             @click="transfer(scope.row, 'withdrawal')"
             type="text"
             v-if="isShowCrossHandle(scope.row.source)"
+            :disabled="disableTx"
           >
             {{ $t("assets.assets6") }}
           </el-button>
@@ -103,7 +114,6 @@
     v-else
     v-model:currentTab="currentTab"
     v-model:show="showTransfer"
-    :refresh="refresh"
   ></transfer>
 </template>
 
@@ -116,13 +126,14 @@ import {
   divisionAndFix,
   createRPCParams,
   Plus,
-  Times
+  Times,
+  _networkInfo
 } from "@/api/util";
 import SymbolIcon from "@/components/SymbolIcon.vue";
 import AssetsManage from "./AssetsManage.vue";
 import Transfer from "./transfer/index.vue";
 import config from "@/config";
-import { listen, unListen } from "@/api/websocket";
+import { listen, unListen } from "@/api/promiseSocket";
 const url = config.WS_URL;
 
 export default defineComponent({
@@ -142,11 +153,18 @@ export default defineComponent({
     address: {
       immediate: true,
       handler(val) {
-        // console.log(val, 444)
+        console.log(val, 444)
         if (val) {
           this.talonAddress = getTalonAddress(val);
           this.getList();
-          this.refresh = true;
+        }
+      }
+    },
+    disableTx: {
+      immediate: true,
+      handler(val) {
+        if (val) {
+          this.showTransfer = false;
         }
       }
     }
@@ -170,6 +188,7 @@ export default defineComponent({
   },
   data() {
     return {
+      loading: true,
       showAssetManage: false,
       selectAssets: [],
       allAssetsList: [],
@@ -177,47 +196,57 @@ export default defineComponent({
       currentTab: "first",
       tableData: [],
       talonAddress: "",
-      refresh: false,
       transferAsset: {}
     };
   },
 
   methods: {
-    getList() {
+    async getList() {
+      this.loading = true;
       const channel = "getAccountLedgerList";
       const params = createRPCParams(channel);
       params.params.push(this.talonAddress);
-      listen({
+      const res = await listen({
         url,
         channel,
         params: {
           cmd: true,
           channel: "psrpc:" + JSON.stringify(params)
-        },
-        success: data => {
-          data.map(item => {
-            const decimal = item.decimals;
-            item.number = divisionAndFix(item.totalBalanceStr, decimal);
-            item.locking = divisionAndFix(
-              Plus(item.timeLock, item.consensusLockStr),
-              decimal
-            );
-            item.available = divisionAndFix(item.balanceStr, decimal);
-            item.valuation = Times(item.number, item.usdPrice).toFixed(2);
-          });
-          // console.log(data, 1);
-          const sortDataByValue = [...data].sort((a, b) => {
-            // console.log(a.valuation, b.valuation);
-            return a.valuation - b.valuation > 0 ? -1 : 1;
-          });
-          const sortDataBySymbol = [...data].sort((a, b) => {
-            return a.symbol > b.symbol ? 1 : -1;
-          });
-          this.sortDataByValue = sortDataByValue;
-          this.allAssetsList = sortDataBySymbol;
-          this.filterAssets();
         }
       });
+      this.loading = false;
+      const data = res.filter(item => {
+        const decimal = item.decimals;
+        item.number = divisionAndFix(item.totalBalanceStr, decimal);
+        item.locking = divisionAndFix(
+          Plus(item.timeLock, item.consensusLockStr),
+          decimal
+        );
+        item.available = divisionAndFix(item.balanceStr, decimal);
+        item.valuation = Times(item.number, item.usdPrice).toFixed(2);
+        if (!item.heterogeneousList) {
+          return true;
+        } else {
+          let supportedChain = false;
+          item.heterogeneousList.map(v => {
+            Object.keys(_networkInfo).map(key => {
+              if (_networkInfo[key].chainId === v.heterogeneousChainId) {
+                supportedChain = true;
+              }
+            });
+          });
+          return supportedChain;
+        }
+      });
+      const sortDataByValue = [...data].sort((a, b) => {
+        return a.valuation - b.valuation > 0 ? -1 : 1;
+      });
+      const sortDataBySymbol = [...data].sort((a, b) => {
+        return a.symbol > b.symbol ? 1 : -1;
+      });
+      this.sortDataByValue = sortDataByValue;
+      this.allAssetsList = sortDataBySymbol;
+      this.filterAssets();
     },
     //过滤展示资产列表
     filterAssets() {
@@ -271,6 +300,9 @@ export default defineComponent({
   box-shadow: 0px 2px 0px 0px #e9eaf4;
   border-radius: 50px;
   padding: 35px 40px;
+  .font_20 {
+    font-size: 20px;
+  }
   .top {
     .top-title {
       font-size: 30px;

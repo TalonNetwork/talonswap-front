@@ -41,8 +41,8 @@ class WebSocketBuilder {
     };
   }
 
-  listen(channel, params, resolve) {
-    console.log(this.ws?.readyState, 789);
+  listen(channel, params, resolve, reject) {
+    // console.log(this.ws?.readyState, 789);
     if (this.ws?.readyState === 0) {
       setTimeout(() => {
         this.listen(channel, params, resolve);
@@ -50,9 +50,9 @@ class WebSocketBuilder {
     } else {
       const existHandle = this.updateHandle[channel];
       if (existHandle && existHandle.length) {
-        this.updateHandle[channel].push(resolve);
+        this.updateHandle[channel].push({ resolve, reject });
       } else {
-        this.updateHandle[channel] = [resolve];
+        this.updateHandle[channel] = [{ resolve, reject }];
       }
       const msg = JSON.stringify({
         action: "Subscribe",
@@ -90,10 +90,11 @@ class WebSocketBuilder {
         console.log("----method----", data.method);
         console.log("----" + data.method + "-res----", JSON.parse(data.data));
         if (handles && handles.length) {
-          handles.forEach(handle => handle(JSON.parse(data.data)));
+          handles.forEach(handle => handle.resolve(JSON.parse(data.data)));
         }
         break;
       case "Error":
+        // console.log(444444);
       // this.onError && this.onError(data);
     }
   }
@@ -133,7 +134,7 @@ export function listen(data) {
     WebSocketBuilder.sockets[url] = newSocket;
     return new Promise((resolve, reject) => {
       newSocket.connect(() => {
-        newSocket.listen(channel, resolve, reject);
+        newSocket.listen(channel, params, resolve, reject);
       });
     });
   } else {

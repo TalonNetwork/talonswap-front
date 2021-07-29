@@ -162,7 +162,7 @@ export function genId() {
 export function getCurrentAccount(address: string | null): any {
   if (!address) return null;
   const accountList =
-    JSON.parse(localStorage.getItem("accountList") || "") || [];
+    JSON.parse(localStorage.getItem("accountList") || "null") || [];
   const currentAccount = accountList.find((item: any) => {
     return Object.keys(item.address).find(
       v => item.address[v].toLowerCase() === address.toLowerCase()
@@ -269,13 +269,13 @@ const KCCOrigin = isBeta
   : "https://explorer.kcc.io"; */
 
 export const _networkInfo = {
-  NULS: {
+  /* NULS: {
     name: "NULS",
     chainId: isBeta ? 2 : 1,
     origin: NULSOrigin,
     color: "#00da9d",
     mainAsset: "NULS"
-  },
+  }, */
   NERVE: {
     name: "NERVE",
     chainId: isBeta ? 5 : 9,
@@ -283,7 +283,7 @@ export const _networkInfo = {
     color: "#56bff3",
     mainAsset: "NERVE"
   },
-  Ethereum: {
+  /* Ethereum: {
     name: "Ethereum",
     chainId: 101,
     origin: ETHOrigin,
@@ -291,7 +291,7 @@ export const _networkInfo = {
     mainAsset: "ETH",
     ropsten: "0x3",
     homestead: "0x1"
-  },
+  }, */
   BSC: {
     name: "BSC",
     chainId: 102,

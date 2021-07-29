@@ -97,6 +97,7 @@ export default defineComponent({
             accountList.push(account);
           }
           localStorage.setItem("accountList", JSON.stringify(accountList));
+          store.commit("setCurrentAddress", account);
           const fromPath = route.redirectedFrom?.fullPath || "/";
           router.push(fromPath);
         }

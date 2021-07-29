@@ -102,6 +102,8 @@ export default defineComponent({
   name: "Header",
   setup() {
     const store = useStore();
+    const router = useRouter();
+    const route = useRoute();
     console.log(store, 66);
     // const showConnect = store.state.showConnect;
     const { address, chainId, initProvider, connect, disconnect } =
@@ -113,7 +115,11 @@ export default defineComponent({
       val => {
         if (val) {
           const currentAccount = getCurrentAccount(val);
-          store.commit("setCurrentAddress", currentAccount);
+          if (!currentAccount) {
+            router.push("/login");
+          }
+          console.log(currentAccount, 9999);
+          store.commit("setCurrentAddress", currentAccount || {});
         }
       },
       {
@@ -149,8 +155,7 @@ export default defineComponent({
       disconnect();
       manageAccount.value = false;
     }
-    const router = useRouter();
-    const route = useRoute();
+    
     const activeIndex = ref("");
     watch(
       () => route.path,
