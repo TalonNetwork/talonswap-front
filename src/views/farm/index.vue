@@ -12,7 +12,7 @@
     </div>
     <div class="search">
       <div class="sort">
-        <el-select v-model="sortValue" placeholder="请选择">
+        <el-select v-model="sortValue" placeholder="">
           <el-option
             v-for="item in sortList"
             :key="item.value"
@@ -26,7 +26,7 @@
           v-model="mortgageValue"
           active-color="#5F71F5"
           inactive-color="#D0D6FF"
-          active-text="只看已抵押"
+          :active-text="$t('farm.farm1')"
           width="35"
         ></el-switch>
       </div>
@@ -41,24 +41,24 @@
           <farm-symbol :imgList="item.logoList" :name="item.name"></farm-symbol>
           <ul>
             <li class="fl">
-              <p>收益</p>
+              <p>{{ $t("farm.farm2") }}</p>
               <h2>{{ item.pendingReward }} {{ item.syrupTokenSymbol }}</h2>
             </li>
             <li class="fl">
-              <p>年化收益</p>
+              <p>{{ $t("farm.farm3") }}</p>
               <h2>{{ item.apr }}%</h2>
             </li>
             <li class="fl">
-              <p>流动性总价值</p>
+              <p>{{ $t("farm.farm4") }}</p>
               <h2>${{ item.tatalStakeTokenUSD }}</h2>
             </li>
             <li class="fl">
-              <p>剩余总奖励</p>
+              <p>{{ $t("farm.farm5") }}</p>
               <h2>{{ item.syrupTokenBalance }} {{ item.syrupTokenSymbol }}</h2>
             </li>
           </ul>
           <div class="link view" @click="showId(item.farmHash)">
-            详情
+            {{ $t("farm.farm6") }}
             <i
               :class="
                 item.showId ? 'el-icon-arrow-down' : 'el-icon-arrow-right'
@@ -76,7 +76,7 @@
         </collapse-transition>
       </div>
       <div class="more">
-        <span class="link" @click="createFarm">创建新的Farm</span>
+        <span class="link" @click="createFarm">{{ $t("farm.farm11") }}</span>
       </div>
     </div>
 
@@ -90,23 +90,33 @@
       :close-on-press-escape="false"
       :show-close="false"
     >
-      <div class="titles">{{ addOrMinus === "add" ? "添加" : "取回" }}LP</div>
+      <div class="titles">
+        {{ addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10") }}LP
+      </div>
       <div class="infos">
         <div class="in">
-          <span class="fl">{{ addOrMinus === "add" ? "添加" : "取回" }}LP</span>
-          <label class="fr">余额：{{ tokenInfo.lpBalance }}</label>
+          <span class="fl">
+            {{ addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10") }}LP
+          </span>
+          <label class="fr">
+            {{ $t("public.public16") }}{{ tokenInfo.lpBalance }}
+          </label>
         </div>
         <div class="clear"></div>
         <div class="to">
           <el-input v-model="numberValue" class="fl" placeholder="0"></el-input>
-          <span class="fl click max" @click="clickMax">最大</span>
+          <span class="fl click max" @click="clickMax">Max</span>
           <span class="fr lp">{{ tokenInfo.name }}</span>
         </div>
       </div>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="dialogAddOrMinus = false">取 消</el-button>
-          <el-button type="primary" @click="confirmAddOrMinus">确 定</el-button>
+          <el-button @click="dialogAddOrMinus = false">
+            {{ $t("public.public8") }}
+          </el-button>
+          <el-button type="primary" @click="confirmAddOrMinus">
+            {{ $t("public.public9") }}
+          </el-button>
         </span>
       </template>
     </el-dialog>
@@ -138,18 +148,22 @@ const Signature = require("elliptic/lib/elliptic/ec/signature");
 // const txs = nerve.model.txs;
 import http from "@/api/http";
 import config from "@/config";
+import { useI18n } from "vue-i18n";
+import { useRouter } from "vue-router";
 nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 
 export default defineComponent({
   name: "Farm",
   setup() {
+    const router = useRouter();
+    const { t } = useI18n();
     const state = reactive({
       contractAddress: "0x0faee22173db311f4c57c81ec6867e5deef6c218", //合约地址
       sortList: [
-        { value: "选项1", label: "黄金糕" },
-        { value: "选项2", label: "双皮奶" }
+        { value: "1", label: t("farmRankType.1") },
+        { value: "2", label: t("farmRankType.2") }
       ],
-      sortValue: "",
+      sortValue: "1",
       mortgageValue: false,
 
       farmLoading: false, //加载动画
@@ -332,7 +346,8 @@ export default defineComponent({
     }
 
     async function createFarm() {
-      const fromAddress = "TNVTdTSPRnXkDiagy7enti1KL75NU5AxC9sQA";
+      router.push("/create-farm");
+      /* const fromAddress = "TNVTdTSPRnXkDiagy7enti1KL75NU5AxC9sQA";
       // const pri = "4594348E3482B751AA235B8E580EFEF69DB465B3A291C5662CEDA6459ED12E39";
       const remark = "farm create test...";
       const tx = await nerve.swap.farmCreate(
@@ -373,14 +388,23 @@ export default defineComponent({
         jsonrpc: "2.0",
         method: "broadcastTx",
         params: [5, txHex]
-      });
+      }); */
+    }
+
+    //打开加减弹框
+    function openDialogAddOrMinus(tokenInfo, addOrMinus) {
+      state.numberValue = "";
+      state.dialogAddOrMinus = true;
+      state.addOrMinus = addOrMinus;
+      state.tokenInfo = tokenInfo;
     }
 
     return {
       ...toRefs(state),
       showId,
       talonList,
-      createFarm
+      createFarm,
+      openDialogAddOrMinus
     };
   },
   components: {
@@ -1170,7 +1194,9 @@ export default defineComponent({
   .info {
     background: #ffffff;
     border-radius: 20px;
-    padding: 20px 0;
+    padding: 20px 0 80px;
+    min-height: 200px;
+    position: relative;
     .lis {
       font-family: PingFang SC;
       .title {
@@ -1212,8 +1238,10 @@ export default defineComponent({
       }
     }
     .more {
+      position: absolute;
+      width: 100%;
       text-align: center;
-      padding-top: 20px;
+      bottom: 20px;
     }
   }
   .addOrMinus {

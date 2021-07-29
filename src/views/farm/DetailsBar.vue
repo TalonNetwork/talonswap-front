@@ -2,18 +2,20 @@
   <div class="details">
     <div class="getLp">
       <p class="click">
-        获取NULS-ETH LP
+        {{ $t("farm.farm7") }}NULS-ETH LP
         <i class=""></i>
       </p>
       <p class="click">
-        查看交易对信息
+        {{ $t("farm.farm8") }}
         <i class=""></i>
       </p>
     </div>
     <div class="biaoge">
       <div class="gain">
         <div class="left">
-          <div class="info-title">{{ tokenInfo.syrupTokenSymbol }}收益</div>
+          <div class="info-title">
+            {{ tokenInfo.syrupTokenSymbol }}{{ $t("farm.farm2") }}
+          </div>
           <p>{{ tokenInfo.pendingReward }}</p>
           <span>≈${{ tokenInfo.pendingRewardUSD }}</span>
         </div>
@@ -24,13 +26,13 @@
             size="small"
             @click="gather(tokenInfo)"
           >
-            收取
+            {{ $t("farm.farm21") }}
           </el-button>
         </div>
       </div>
       <div class="alter">
         <div class="left">
-          <div class="info-title">已质押LP</div>
+          <div class="info-title">{{ $t("farm.farm9") }}LP</div>
           <p>{{ tokenInfo.stakedTokenAmount }}</p>
         </div>
         <div class="right">
@@ -89,7 +91,7 @@ export default {
      * @author: Wave
      */
     minusLP(tokenInfo: any) {
-      // this.$emit("openDialogAddOrMinus", tokenInfo, "minus");
+      this.$emit("openDialogAddOrMinus", tokenInfo, "minus");
     },
 
     /**
@@ -99,7 +101,7 @@ export default {
      * @author: Wave
      */
     addLP(tokenInfo: any) {
-      // this.$emit("openDialogAddOrMinus", tokenInfo, "add");
+      this.$emit("openDialogAddOrMinus", tokenInfo, "add");
     }
   }
 };

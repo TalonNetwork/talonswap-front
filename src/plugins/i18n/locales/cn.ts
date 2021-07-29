@@ -15,6 +15,7 @@ const cn = {
     public13: "已复制到剪切板",
     public14: "网络错误",
     public15: "手续费: ",
+    public16: "余额: ",
     
   },
   home: {
@@ -97,6 +98,33 @@ const cn = {
     login2: "立即生成",
     login3: "生成Talon地址失败: ",
     login4: "连接钱包"
+  },
+  farm: {
+    farm1: "只看已质押",
+    farm2: "收益",
+    farm3: "年化收益",
+    farm4: "流动性总价值",
+    farm5: "剩余总奖励",
+    farm6: "详情",
+    farm7: "获取",
+    farm8: "查看交易对信息",
+    farm9: "已质押",
+    farm10: "取回",
+    farm11: "创建新的Farm",
+    farm12: "创建Farm",
+    farm13: "质押的Token资产",
+    farm14: "解锁时间",
+    farm15: "奖励的Token资产",
+    farm16: "奖励的Token数量/天",
+    farm17: "奖励Token总量",
+    farm18: "我清楚创建Farm时，奖励给用户的Token将被立即转入智能合约",
+    farm19: "确认创建",
+    farm20: "添加",
+    farm21: "收取",
+  },
+  farmRankType: {
+    1: "按照收益排名",
+    2: "按照流动性排名"
   }
 };
 

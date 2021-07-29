@@ -33,6 +33,11 @@ const routes: Array<RouteRecordRaw> = [
     component: Farm,
   },
   {
+    path: "/create-farm",
+    name: "createFarm",
+    component: () => import("@/views/createFarm/index.vue"),
+  },
+  {
     path: "/info",
     name: "info",
     component: () => import("@/views/info/Info.vue"),
