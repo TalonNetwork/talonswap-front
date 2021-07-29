@@ -252,7 +252,7 @@ const ETHOrigin = isBeta
 const BNBOrigin = isBeta
   ? "https://testnet.bscscan.com"
   : "https://bscscan.com";
-/* const HTOrigin = isBeta
+const HTOrigin = isBeta
   ? "https://testnet.hecoinfo.com"
   : "https://hecoinfo.com";
 const OKOrigin = isBeta
@@ -266,7 +266,7 @@ const PolygonOrigin = isBeta
   : "https://polygonscan.com";
 const KCCOrigin = isBeta
   ? "https://scan-testnet.kcc.network"
-  : "https://explorer.kcc.io"; */
+  : "https://explorer.kcc.io";
 
 export const _networkInfo = {
   /* NULS: {
@@ -292,16 +292,16 @@ export const _networkInfo = {
     ropsten: "0x3",
     homestead: "0x1"
   }, */
-  BSC: {
-    name: "BSC",
-    chainId: 102,
-    origin: BNBOrigin,
-    color: "#e7b941",
-    mainAsset: "BNB",
-    ropsten: "0x61",
-    homestead: "0x38"
-  },
-  /* Heco: {
+  // BSC: {
+  //   name: "BSC",
+  //   chainId: 102,
+  //   origin: BNBOrigin,
+  //   color: "#e7b941",
+  //   mainAsset: "BNB",
+  //   ropsten: "0x61",
+  //   homestead: "0x38"
+  // },
+  Heco: {
     name: "Heco",
     chainId: 103,
     origin: HTOrigin,
@@ -310,7 +310,7 @@ export const _networkInfo = {
     ropsten: "0x100",
     homestead: "0x80"
   },
-  OKExChain: {
+  /* OKExChain: {
     name: "OKExChain",
     chainId: 104,
     origin: OKOrigin,

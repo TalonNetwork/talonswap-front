@@ -103,7 +103,7 @@ export default defineComponent({
         }
       } catch (e) {
         ElMessage.warning({
-          message: t("login.login3") + JSON.stringify(e),
+          message: t("login.login3"),
           type: "warning"
         });
       }
