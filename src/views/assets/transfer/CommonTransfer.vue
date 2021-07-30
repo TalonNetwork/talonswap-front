@@ -26,7 +26,7 @@
     </div>
     <div class="confirm-wrap">
       <el-button type="primary" @click="sendTx" :disabled="disableTransfer">
-        {{ $t("transfer.transfer9") }}
+        {{ $t("transfer.transfer10") }}
       </el-button>
     </div>
   </div>

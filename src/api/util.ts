@@ -22,19 +22,19 @@ export const Power = (arg: Big) => {
 };
 
 // 加法
-export const Plus = (nu: string, arg: string) => {
+export const Plus = (nu: Big, arg: Big) => {
   const newPlus = new BigNumber(nu);
   return newPlus.plus(arg);
 };
 
 // 减法
-export const Minus = (nu: string, arg: string) => {
+export const Minus = (nu: Big, arg: Big) => {
   const newMinus = new BigNumber(nu);
   return newMinus.minus(arg);
 };
 
 // 乘法
-export const Times = (nu: string, arg: string) => {
+export const Times = (nu: Big, arg: Big) => {
   const newTimes = new BigNumber(nu);
   return newTimes.times(arg);
 };

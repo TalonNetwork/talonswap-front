@@ -10,6 +10,7 @@ import txs from "nerve-sdk-js/lib/model/txs";
 import config from "@/config";
 import { getProvider } from "@/hooks/useEthereum";
 import { listen, unListen } from "@/api/promiseSocket";
+import { broadcastHex } from "@/model";
 
 const url = config.WS_URL;
 
@@ -35,17 +36,20 @@ export class NTransfer {
 
   async getTxHex(data) {
     const { inputs, outputs, txData, remarks = "", pub, signAddress } = data;
-    // 组装交易
-    const tAssemble = this.sdk.transactionAssemble(
-      inputs,
-      outputs,
-      "",
-      this.type,
-      txData
-    );
-    // 调用metamask签名hash，然后拼接公钥完成交易签名
-    const hash = "0x" + tAssemble.getHash().toString("hex");
-
+    let tAssemble = data.tAssemble;
+    let hash;
+    if (!tAssemble) {
+      // 组装交易
+      tAssemble = this.sdk.transactionAssemble(
+        inputs,
+        outputs,
+        "",
+        this.type,
+        txData
+      );
+      // 调用metamask签名hash，然后拼接公钥完成交易签名
+    }
+    hash = "0x" + tAssemble.getHash().toString("hex");
     let flat = await this.provider.request({
       method: "eth_sign",
       params: [signAddress, hash]
@@ -262,18 +266,7 @@ export class NTransfer {
   }
 
   async broadcastHex(txHex) {
-    const channel = "broadcastTx";
-    const params = createRPCParams(channel);
-    params.params = params.params.concat([txHex]);
-    const res = await listen({
-      url,
-      channel,
-      params: {
-        cmd: true,
-        channel: "psrpc:" + JSON.stringify(params)
-      }
-    });
-    return res;
+    return await broadcastHex(txHex);
   }
 }
 

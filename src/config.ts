@@ -23,7 +23,7 @@ const timeout = 15000;
 const config = {
   beta: {
     isBeta: true,
-    API_URL: "/api",
+    API_URL: "http://beta.public.nerve.network",
     WS_URL,
     chainId: 5,
     assetId: 1,

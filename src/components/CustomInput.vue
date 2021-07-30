@@ -2,7 +2,7 @@
   <div class="custom-input">
     <div class="info flex-between">
       <span>{{ $t("public.public11") }}</span>
-      <span>{{ $t("public.public12") }}: {{ balance }}</span>
+      <span>{{ $t("public.public12") }}{{ balance }}</span>
     </div>
     <div class="inner flex-between">
       <el-input

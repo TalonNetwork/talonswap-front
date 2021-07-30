@@ -1,18 +1,16 @@
 <template>
-  <div
-    class="w1300 farm"
-    v-loading="farmLoading"
-    element-loading-text="拼命加载中"
-    element-loading-spinner="el-icon-loading"
-    element-loading-background="rgba(0, 0, 0, 0.5)"
-  >
+  <div class="w1300 farm">
     <div class="top clear">
       <div class="fl uni isActive">Uniswap Farm</div>
       <div class="fr click talon">Talon Farm</div>
     </div>
     <div class="search">
       <div class="sort">
-        <el-select v-model="sortValue" placeholder="">
+        <el-select
+          v-model="sortValue"
+          placeholder=""
+          popper-class="farm-select"
+        >
           <el-option
             v-for="item in sortList"
             :key="item.value"
@@ -31,7 +29,11 @@
         ></el-switch>
       </div>
     </div>
-    <div class="info">
+    <div
+      class="info"
+      v-loading="loading"
+      element-loading-background="rgba(255, 255, 255, 0.8)"
+    >
       <div class="lis" v-for="(item, index) of talonList" :key="index">
         <div class="title">
           <!-- <div class="symbol">
@@ -70,8 +72,7 @@
           <DetailsBar
             :tokenInfo="item"
             v-show="item.showDetail"
-            @openDialogAddOrMinus="openDialogAddOrMinus"
-            @charge="charge"
+            @loading="handleLoading"
           ></DetailsBar>
         </collapse-transition>
       </div>
@@ -79,53 +80,11 @@
         <span class="link" @click="createFarm">{{ $t("farm.farm11") }}</span>
       </div>
     </div>
-
-    <el-dialog
-      title=""
-      center
-      width="470px"
-      custom-class="addOrMinus"
-      v-model="dialogAddOrMinus"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      :show-close="false"
-    >
-      <div class="titles">
-        {{ addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10") }}LP
-      </div>
-      <div class="infos">
-        <div class="in">
-          <span class="fl">
-            {{ addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10") }}LP
-          </span>
-          <label class="fr">
-            {{ $t("public.public16") }}{{ tokenInfo.lpBalance }}
-          </label>
-        </div>
-        <div class="clear"></div>
-        <div class="to">
-          <el-input v-model="numberValue" class="fl" placeholder="0"></el-input>
-          <span class="fl click max" @click="clickMax">Max</span>
-          <span class="fr lp">{{ tokenInfo.name }}</span>
-        </div>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogAddOrMinus = false">
-            {{ $t("public.public8") }}
-          </el-button>
-          <el-button type="primary" @click="confirmAddOrMinus">
-            {{ $t("public.public9") }}
-          </el-button>
-        </span>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs, onMounted } from "vue";
-import { useStore } from "vuex";
+import { defineComponent, reactive, toRefs, onMounted, ref } from "vue";
 import { ethers } from "ethers";
 import {
   divisionAndFix,
@@ -150,6 +109,7 @@ import http from "@/api/http";
 import config from "@/config";
 import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 
 export default defineComponent({
@@ -157,6 +117,7 @@ export default defineComponent({
   setup() {
     const router = useRouter();
     const { t } = useI18n();
+    const loading = ref(true);
     const state = reactive({
       contractAddress: "0x0faee22173db311f4c57c81ec6867e5deef6c218", //合约地址
       sortList: [
@@ -182,7 +143,11 @@ export default defineComponent({
     onMounted(() => {
       // init();
       getFarmData();
-      getUserFarm("NERVEepb6FhfgWLyqHUQgHoHwRGuw3huvchBus");
+      const talon = store.state.addressInfo?.address?.Talon;
+      if (talon) {
+        getUserFarm(talon);
+      }
+      loading.value = false;
     });
     async function init() {
       state.farmLoading = true;
@@ -338,11 +303,17 @@ export default defineComponent({
 
     //详情
     function showId(hash: string) {
+      console.log(hash, 132, talonList);
       for (let item of talonList.value) {
+        console.log(item.farmHash, 6566);
         if (item.farmHash === hash) {
           item.showDetail = !item.showDetail;
         }
       }
+    }
+
+    function handleLoading(status: boolean) {
+      loading.value = status;
     }
 
     async function createFarm() {
@@ -392,7 +363,7 @@ export default defineComponent({
     }
 
     //打开加减弹框
-    function openDialogAddOrMinus(tokenInfo, addOrMinus) {
+    function openDialogAddOrMinus(tokenInfo: any, addOrMinus: any) {
       state.numberValue = "";
       state.dialogAddOrMinus = true;
       state.addOrMinus = addOrMinus;
@@ -400,9 +371,11 @@ export default defineComponent({
     }
 
     return {
+      loading,
       ...toRefs(state),
       showId,
       talonList,
+      handleLoading,
       createFarm,
       openDialogAddOrMinus
     };
@@ -1244,83 +1217,8 @@ export default defineComponent({
       bottom: 20px;
     }
   }
-  .addOrMinus {
-    border-radius: 10px;
-    .el-dialog__header {
-      padding: 0;
-    }
-    .el-dialog__body {
-      font-family: PingFang SC;
-      .titles {
-        font-size: 24px;
-        font-weight: 600;
-        line-height: 36px;
-        text-align: center;
-        margin: 0 0 20px 20px;
-      }
-      .infos {
-        width: 417px;
-        height: 94px;
-        background: #ffffff;
-        border: 1px solid #e3eeff;
-        border-radius: 10px;
-        .in {
-          font-size: 14px;
-          font-weight: 500;
-          color: #7e87c2;
-          padding: 15px 20px 15px 20px;
-          height: 20px;
-        }
-        .to {
-          .el-input {
-            width: 100px;
-            margin: 0 0 0 20px;
-            .el-input__inner {
-              border: transparent;
-              height: 30px;
-              line-height: 30px;
-            }
-          }
-          span {
-            font-size: 14px;
-            font-weight: 600;
-          }
-          .max {
-            width: 36px;
-            height: 24px;
-            background: #e4e7ff;
-            font-size: 12px;
-            font-weight: 400;
-            color: #4a5ef2;
-            border-radius: 5px;
-            text-align: center;
-            line-height: 22px;
-            margin: 8px 0 0 10px;
-          }
-          .lp {
-            margin: 8px 20px 0 0;
-          }
-        }
-      }
-    }
-    .el-dialog__footer {
-      padding: 10px 0 60px 0;
-      .dialog-footer {
-        .el-button {
-          width: 185px;
-          height: 48px;
-          background: #ffffff;
-          border: 1px solid #4a5ef2;
-        }
-        .el-button--primary {
-          background: #4a5ef2;
-          margin: 0 0 0 30px;
-        }
-      }
-    }
-  }
 }
-.el-select__popper.el-popper[role="tooltip"] {
+.farm-select.el-select__popper.el-popper[role="tooltip"] {
   background: #5f71f5 !important;
   border: 0 !important;
   border-radius: 10px;

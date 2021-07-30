@@ -34,7 +34,7 @@
     </div>
     <div class="confirm-wrap">
       <el-button type="primary" @click="sendTx" :disabled="disableTransfer">
-        {{ $t("transfer.transfer9") }}
+        {{ $t("transfer.transfer11") }}
       </el-button>
     </div>
   </div>
@@ -198,7 +198,7 @@ export default defineComponent({
           assetsId: assetId,
           amount: timesDecimals(this.amount, decimals),
           fee: 0,
-          proposalPrice: timesDecimals(this.fee, decimals)
+          proposalPrice: timesDecimals(this.fee, 8)
         };
 
         console.log(transferInfo);

@@ -1,5 +1,5 @@
 <template>
-  <div class="details">
+  <div class="farm-details">
     <div class="getLp">
       <p class="click">
         {{ $t("farm.farm7") }}NULS-ETH LP
@@ -20,12 +20,7 @@
           <span>≈${{ tokenInfo.pendingRewardUSD }}</span>
         </div>
         <div class="right">
-          <el-button
-            class="btns"
-            type="primary"
-            size="small"
-            @click="gather(tokenInfo)"
-          >
+          <el-button class="btns" type="primary" size="small" @click="gather">
             {{ $t("farm.farm21") }}
           </el-button>
         </div>
@@ -33,7 +28,8 @@
       <div class="alter">
         <div class="left">
           <div class="info-title">{{ $t("farm.farm9") }}LP</div>
-          <p>{{ tokenInfo.stakedTokenAmount }}</p>
+          <p>{{ tokenInfo.stakeAmount }}</p>
+          <span>≈${{ tokenInfo.stakeUSD }}</span>
         </div>
         <div class="right">
           <el-button
@@ -41,23 +37,73 @@
             type="primary"
             size="small"
             icon="el-icon-minus"
-            @click="minusLP(tokenInfo)"
+            @click="handleLP('minus')"
           ></el-button>
           <el-button
             class="btns"
             type="primary"
             size="small"
             icon="el-icon-plus"
-            @click="addLP(tokenInfo)"
+            @click="handleLP('add')"
           ></el-button>
         </div>
       </div>
     </div>
+    <el-dialog
+      title=""
+      center
+      width="470px"
+      custom-class="add-minus-dialog"
+      v-model="dialogAddOrMinus"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+    >
+      <div class="titles">
+        {{ addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10") }}LP
+      </div>
+      <div class="infos">
+        <div class="in flex-between">
+          <span>
+            {{ addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10") }}LP
+          </span>
+          <label>{{ $t("public.public16") }}{{ tokenInfo.stakeAmount }}</label>
+        </div>
+        <div class="clear"></div>
+        <div class="to">
+          <el-input class="no-border" v-model="numberValue" placeholder="0.0">
+            <template #append><span @click="clickMax">Max</span></template>
+          </el-input>
+          <!-- <el-input v-model="numberValue" class="fl" placeholder="0"></el-input>
+          <span class="fl click max" @click="clickMax">Max</span> -->
+          <span class="fr lp">{{ tokenInfo.name }}</span>
+        </div>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogAddOrMinus = false">
+            {{ $t("public.public8") }}
+          </el-button>
+          <el-button type="primary" @click="confirmAddOrMinus">
+            {{ $t("public.public9") }}
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
-<script lang="ts">
-export default {
+<script>
+import { defineComponent, ref } from "vue";
+import config from "@/config";
+import nerve from "nerve-sdk-js";
+import { ElMessage } from "element-plus";
+import { useStore } from "vuex";
+import { useI18n } from "vue-i18n";
+import { NTransfer } from "@/api/api";
+
+nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
+export default defineComponent({
   name: "details-bar",
   props: {
     tokenInfo: {
@@ -69,46 +115,104 @@ export default {
       default: false
     }
   },
-  mounted() {
-    //console.log(this.tokenInfo);
-  },
-  methods: {
-    /**
-     * @disc: 收取
-     * @params: tokenInfo token信息
-     * @date: 2021-05-21 16:06
-     * @author: Wave
-     */
-    gather(tokenInfo: any) {
+  setup(props, { emit }) {
+    const store = useStore();
+    const { t } = useI18n();
+    const dialogAddOrMinus = ref(false);
+    const addOrMinus = ref("add");
+    const numberValue = ref("");
+    // 收取收益
+    async function gather() {
       //console.log(tokenInfo);
-      // this.$emit("charge", tokenInfo);
-    },
-
-    /**
-     * @disc: 减少 LP
-     * @params: tokenInfo token信息
-     * @date: 2021-05-21 16:06
-     * @author: Wave
-     */
-    minusLP(tokenInfo: any) {
-      this.$emit("openDialogAddOrMinus", tokenInfo, "minus");
-    },
-
-    /**
-     * @disc: 添加 LP
-     * @params: tokenInfo token信息
-     * @date: 2021-05-21 16:06
-     * @author: Wave
-     */
-    addLP(tokenInfo: any) {
-      this.$emit("openDialogAddOrMinus", tokenInfo, "add");
+      // emit("charge", tokenInfo);
+      // LPOperation(props.tokenInfo.pendingReward, 2);
+      emit("loading", true);
+      try {
+        const addressInfo = store.state.addressInfo;
+        const { stakeTokenChainId, stakeTokenAssetId, farmHash } =
+          props.tokenInfo;
+        const tx = await nerve.swap.farmStake(
+          addressInfo.address.Talon,
+          nerve.swap.token(stakeTokenChainId, stakeTokenAssetId),
+          config.chainId,
+          config.prefix,
+          0,
+          farmHash,
+          ""
+        );
+        handleHex(tx.hex);
+      } catch (e) {
+        console.log(e, "gain-profit-error");
+        ElMessage.warning({
+          message: e.message || e,
+          type: "warning"
+        });
+      }
+      emit("loading", false);
     }
+
+    function handleLP(type) {
+      if (type === "add") {
+        dialogAddOrMinus.value = true;
+        addOrMinus.value = "add";
+      } else {
+        dialogAddOrMinus.value = true;
+        addOrMinus.value = "minus";
+      }
+    }
+
+    function clickMax() {
+      numberValue.value = props.tokenInfo.stakeAmount;
+    }
+    function confirmAddOrMinus() {
+      if (addOrMinus.value === "add") {
+        LPOperation(numberValue.value, 0);
+      } else {
+        LPOperation(numberValue.value, 1);
+      }
+    }
+    // 添加 - 0、减少 - 1 lp, 领取收益 -2
+    function LPOperation(number, type) {}
+
+    async function handleHex(hex) {
+      const tAssemble = nerve.deserializationTx(hex);
+
+      const transfer = new NTransfer({ chain: "NERVE" });
+      const addressInfo = store.state.addressInfo;
+      const txHex = await transfer.getTxHex({
+        tAssemble,
+        pub: addressInfo.pub,
+        signAddress: addressInfo.address.Ethereum
+      });
+      // console.log(txHex, 666);
+      const result = await transfer.broadcastHex(txHex);
+      if (result && result.hash) {
+        ElMessage.success({
+          message: t("transfer.transfer14"),
+          type: "success"
+        });
+      } else {
+        ElMessage.warning({
+          message: "Create farm failed",
+          type: "warning"
+        });
+      }
+    }
+    return {
+      dialogAddOrMinus,
+      addOrMinus,
+      numberValue,
+      gather,
+      handleLP,
+      clickMax,
+      confirmAddOrMinus
+    };
   }
-};
+});
 </script>
 
 <style lang="scss">
-.details {
+.farm-details {
   /* height: 148px; */
   padding: 20px 60px 20px 40px;
   background: #fafcff;
@@ -173,6 +277,83 @@ export default {
         i {
           font-size: 20px;
         }
+      }
+    }
+  }
+}
+.add-minus-dialog {
+  border-radius: 10px;
+  .el-dialog__header {
+    padding: 0;
+  }
+  .el-dialog__body {
+    .titles {
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 36px;
+      text-align: center;
+      margin: 0 0 20px 20px;
+    }
+    .infos {
+      width: 417px;
+      height: 94px;
+      padding: 15px 20px;
+      background: #ffffff;
+      border: 1px solid #e3eeff;
+      border-radius: 15px;
+      .in {
+        font-size: 14px;
+        font-weight: 500;
+        color: #7e87c2;
+        margin-bottom: 4px;
+      }
+      .to {
+        display: flex;
+        align-items: center;
+        .el-input {
+          flex: 1;
+          .el-input__inner {
+            font-size: 20px;
+            /* border: transparent;
+            height: 30px;
+            line-height: 30px; */
+          }
+        }
+        .el-input-group__append,
+        .el-input-group__prepend {
+          background-color: transparent;
+          border: none;
+          padding-right: 0;
+          span {
+            display: inline-block;
+            padding: 3px 6px;
+            color: #4b7cf7;
+            background-color: #e4e7ff;
+            cursor: pointer;
+            border-radius: 5px;
+          }
+        }
+        .lp {
+          min-width: 100px;
+          font-size: 14px;
+          font-weight: 600;
+          text-align: right;
+        }
+      }
+    }
+  }
+  .el-dialog__footer {
+    padding: 10px 0 60px 0;
+    .dialog-footer {
+      .el-button {
+        width: 185px;
+        height: 48px;
+        background: #ffffff;
+        border: 1px solid #4a5ef2;
+      }
+      .el-button--primary {
+        background: #4a5ef2;
+        margin: 0 0 0 30px;
       }
     }
   }
