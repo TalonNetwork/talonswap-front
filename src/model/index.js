@@ -50,3 +50,23 @@ export async function getBlockInfo() {
   });
   return res;
 }
+
+// 通过symbol获取资产价格
+export async function uniAssetPrice(symbol) {
+  const channel = "uniAssetPrice";
+  const params = {
+    method: channel,
+    params: {
+      symbol
+    }
+  };
+  const res = await listen({
+    url,
+    channel,
+    params: {
+      cmd: true,
+      channel: "cmd:" + JSON.stringify(params)
+    }
+  });
+  return res;
+}

@@ -1,8 +1,20 @@
 <template>
   <div class="w1300 farm">
     <div class="top clear">
-      <div class="fl uni isActive">Uniswap Farm</div>
-      <div class="fr click talon">Talon Farm</div>
+      <div
+        class="fl tab-item"
+        :class="{ isActive: current === 1 }"
+        @click="current = 1"
+      >
+        Uniswap Farm
+      </div>
+      <div
+        class="fr tab-item"
+        :class="{ isActive: current === 2 }"
+        @click="current = 2"
+      >
+        Talon Farm
+      </div>
     </div>
     <div class="search">
       <div class="sort">
@@ -25,66 +37,33 @@
           active-color="#5F71F5"
           inactive-color="#D0D6FF"
           :active-text="$t('farm.farm1')"
-          width="35"
+          :width="35"
         ></el-switch>
       </div>
     </div>
-    <div
-      class="info"
-      v-loading="loading"
-      element-loading-background="rgba(255, 255, 255, 0.8)"
-    >
-      <div class="lis" v-for="(item, index) of talonList" :key="index">
-        <div class="title">
-          <!-- <div class="symbol">
-            <div class="logos"></div>
-            <div class="names">{{ item.name }}</div>
-          </div> -->
-          <farm-symbol :imgList="item.logoList" :name="item.name"></farm-symbol>
-          <ul>
-            <li class="fl">
-              <p>{{ $t("farm.farm2") }}</p>
-              <h2>{{ item.pendingReward }} {{ item.syrupTokenSymbol }}</h2>
-            </li>
-            <li class="fl">
-              <p>{{ $t("farm.farm3") }}</p>
-              <h2>{{ item.apr }}%</h2>
-            </li>
-            <li class="fl">
-              <p>{{ $t("farm.farm4") }}</p>
-              <h2>${{ item.tatalStakeTokenUSD }}</h2>
-            </li>
-            <li class="fl">
-              <p>{{ $t("farm.farm5") }}</p>
-              <h2>{{ item.syrupTokenBalance }} {{ item.syrupTokenSymbol }}</h2>
-            </li>
-          </ul>
-          <div class="link view" @click="showId(item.farmHash)">
-            {{ $t("farm.farm6") }}
-            <i
-              :class="
-                item.showId ? 'el-icon-arrow-down' : 'el-icon-arrow-right'
-              "
-            ></i>
-          </div>
-        </div>
-        <collapse-transition>
-          <DetailsBar
-            :tokenInfo="item"
-            v-show="item.showDetail"
-            @loading="handleLoading"
-          ></DetailsBar>
-        </collapse-transition>
-      </div>
-      <div class="more">
-        <span class="link" @click="createFarm">{{ $t("farm.farm11") }}</span>
-      </div>
-    </div>
+    <farm-item
+      v-show="current === 1"
+      :list="uniList"
+      :loading="uniLoading"
+    ></farm-item>
+    <farm-item
+      v-show="current === 2"
+      :list="talonList"
+      :loading="talonLoading"
+      isTalon
+    ></farm-item>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, toRefs, onMounted, ref } from "vue";
+import {
+  defineComponent,
+  reactive,
+  toRefs,
+  onMounted,
+  ref,
+  onUnmounted
+} from "vue";
 import { ethers } from "ethers";
 import {
   divisionAndFix,
@@ -95,9 +74,7 @@ import {
   Times,
   tofix
 } from "../../api/util";
-import DetailsBar from "./DetailsBar.vue";
-import CollapseTransition from "@/components/CollapseTransition.vue";
-import FarmSymbol from "./FarmSymbol.vue";
+import FarmItem from "./FarmItem.vue";
 import useFarmData from "@/hooks/farm/useData";
 import type { TalonFarmItem } from "@/hooks/farm/useData";
 import nerve from "nerve-sdk-js";
@@ -108,16 +85,18 @@ const Signature = require("elliptic/lib/elliptic/ec/signature");
 import http from "@/api/http";
 import config from "@/config";
 import { useI18n } from "vue-i18n";
-import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
+
+const contractAddress = "0x0faee22173db311f4c57c81ec6867e5deef6c218";
 
 export default defineComponent({
   name: "Farm",
   setup() {
-    const router = useRouter();
     const { t } = useI18n();
-    const loading = ref(true);
+    const uniLoading = ref(true);
+    const talonLoading = ref(true);
+    const current = ref(1);
     const state = reactive({
       contractAddress: "0x0faee22173db311f4c57c81ec6867e5deef6c218", //合约地址
       sortList: [
@@ -139,24 +118,30 @@ export default defineComponent({
       numberValue: "" //数量
     });
     const store = useStore();
-    const { talonList, getFarmData, getUserFarm } = useFarmData();
-    onMounted(() => {
+    const { talonList, getFarmData, getUserFarm, uniList, getUniData } = useFarmData();
+    const addressInfo = store.state.addressInfo;
+    onMounted(async () => {
       // init();
-      getFarmData();
-      const talon = store.state.addressInfo?.address?.Talon;
+      await getFarmData();
+      const talon = addressInfo?.address?.Talon;
       if (talon) {
         getUserFarm(talon);
       }
-      loading.value = false;
+      talonLoading.value = false;
     });
-    async function init() {
-      state.farmLoading = true;
-      state.tokenList = await getTokenList(state.contractAddress);
-      //console.log(this.tokenList);
-      state.farmLoading = false;
-    }
 
-    async function getTokenList(contractAddress: string) {
+    let timer: any;
+    onMounted(async () => {
+      const address = addressInfo?.address?.Ethereum;
+      await getUniData(address);
+      uniLoading.value = false;
+      timer = setInterval(async () => {
+        await getUniData(address);
+      }, 10000);
+    });
+    onUnmounted(() => clearInterval(timer));
+
+    async function getTokenList() {
       // The Contract interface
       let abi = [
         "function owner() public view returns (address)",
@@ -172,6 +157,7 @@ export default defineComponent({
       //console.log(contract);
 
       let poolLengthValue = await contract.poolLength();
+      console.log(poolLengthValue, 66655);
       let poolLength = Array.from({
         length: Number(poolLengthValue.toString())
       });
@@ -217,6 +203,7 @@ export default defineComponent({
         let symbolValue = await contractTwo.symbol();
         tokenInfo.name = symbolValue.toString();
         let decimalsValue = await contractTwo.decimals();
+        console.log(decimalsValue, 112233666);
         tokenInfo.lpDecimals = decimalsValue.toString();
         tokenInfo.totalReward = divisionAndFix(
           poolInfoValue[6],
@@ -229,6 +216,7 @@ export default defineComponent({
             Number(item),
             store.state.account
           );
+          console.log(pendingTokenValue, "====pendingTokenValue====");
           tokenInfo.earnings = divisionDecimals(
             pendingTokenValue.toString(),
             Number(tokenInfo.lpDecimals)
@@ -260,6 +248,7 @@ export default defineComponent({
           provider
         );
         let earningsSymbol = await contractThree.symbol();
+        console.log(earningsSymbol, 654);
         tokenInfo.earningsSymbol = earningsSymbol.toString();
 
         let earningsDecimals = await contractThree.decimals();
@@ -298,14 +287,13 @@ export default defineComponent({
 
         tokenList.push(tokenInfo);
       }
-      return tokenList;
+      console.log(tokenList, 9999988888);
+      uniList.value = tokenList;
     }
 
     //详情
     function showId(hash: string) {
-      console.log(hash, 132, talonList);
       for (let item of talonList.value) {
-        console.log(item.farmHash, 6566);
         if (item.farmHash === hash) {
           item.showDetail = !item.showDetail;
         }
@@ -313,53 +301,11 @@ export default defineComponent({
     }
 
     function handleLoading(status: boolean) {
-      loading.value = status;
-    }
-
-    async function createFarm() {
-      router.push("/create-farm");
-      /* const fromAddress = "TNVTdTSPRnXkDiagy7enti1KL75NU5AxC9sQA";
-      // const pri = "4594348E3482B751AA235B8E580EFEF69DB465B3A291C5662CEDA6459ED12E39";
-      const remark = "farm create test...";
-      const tx = await nerve.swap.farmCreate(
-        fromAddress,
-        nerve.swap.token(5, 1),
-        nerve.swap.token(5, 4),
-        5,
-        1000000000000,
-        10000,
-        1,
-        1,
-        "TNVT",
-        remark
-      );
-      const tAssemble = nerve.deserializationTx(tx.hex);
-      const hash = "0x" + tAssemble.getHash().toString("hex");
-      const ercAddress = "0xc11D9943805e56b630A401D4bd9A29550353EFa1";
-      const pub =
-        "0369b20002bc58c74cb6fd5ef564f603834393f53bed20c3314b4b7aba8286a7e0";
-      let flat = await window.ethereum.request({
-        method: "eth_sign",
-        params: [ercAddress, hash]
-      });
-      // console.log(flat, 66, signAddress)
-      flat = flat.slice(2); // 去掉0x
-      const r = flat.slice(0, 64);
-      const s = flat.slice(64, 128);
-      // const recoveryParam = flat.slice(128)
-      let signature = new Signature({ r, s }).toDER("hex");
-      // signature = signature.slice(2)
-
-      const signData = nerve.appSplicingPub(signature, pub);
-      tAssemble.signatures = signData;
-      const txHex = tAssemble.txSerialize().toString("hex");
-      // window.fetch("")
-      http.post("", {
-        id: 891,
-        jsonrpc: "2.0",
-        method: "broadcastTx",
-        params: [5, txHex]
-      }); */
+      if (current.value === 1) {
+        uniLoading.value = status;
+      } else {
+        talonLoading.value = status;
+      }
     }
 
     //打开加减弹框
@@ -371,19 +317,19 @@ export default defineComponent({
     }
 
     return {
-      loading,
+      current,
+      uniLoading,
+      talonLoading,
       ...toRefs(state),
       showId,
       talonList,
+      uniList,
       handleLoading,
-      createFarm,
       openDialogAddOrMinus
     };
   },
   components: {
-    DetailsBar,
-    CollapseTransition,
-    FarmSymbol
+    FarmItem
   },
   computed: {
     /*account() {
@@ -1119,14 +1065,14 @@ export default defineComponent({
     margin: 0 auto;
     border-radius: 24px;
     background-color: #fff;
-    .uni,
-    .talon {
+    .tab-item {
       width: 180px;
       height: 48px;
       text-align: center;
       line-height: 48px;
       color: #4a5ef2;
       font-size: 16px;
+      cursor: pointer;
     }
     .isActive {
       background-color: #5f71f5;

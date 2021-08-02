@@ -10,22 +10,25 @@ interface State {
   networkError: string;
 }
 
-
-const isMobile = /Android|webOS|iPhone|iPod|BlackBerry/i.test(navigator.userAgent);
-const MetaMaskProvider = "ethereum"
-const NaboxProvier = "NaboxWallet"
-const OKExProvier = "okexchain"
+const isMobile = /Android|webOS|iPhone|iPod|BlackBerry/i.test(
+  navigator.userAgent
+);
+const MetaMaskProvider = "ethereum";
+const NaboxProvier = "NaboxWallet";
+const OKExProvier = "okexchain";
 
 export const providerList = [
   { name: "MetaMask", src: MetaMask, provider: MetaMaskProvider },
-  { name: "Nabox", src: Nabox, provider: NaboxProvier },
+  { name: "Nabox", src: Nabox, provider: NaboxProvier }
   // { name: "OKEx Wallet", src: OKEx, provider: OKExProvier },
-]
+];
 
 export function getProvider(type?: string) {
-  if (type) return window[type]
-  const providerType = isMobile ? MetaMaskProvider : localStorage.getItem("providerType");
-  return providerType ? window[providerType] : null
+  if (type) return window[type];
+  const providerType = isMobile
+    ? MetaMaskProvider
+    : localStorage.getItem("providerType");
+  return providerType ? window[providerType] : null;
 }
 
 export default function useEthereum() {
@@ -36,7 +39,7 @@ export default function useEthereum() {
   });
 
   function initProvider() {
-    const provider = getProvider()
+    const provider = getProvider();
     if (provider) {
       state.address = provider.selectedAddress;
       state.chainId = provider.chainId;
@@ -45,10 +48,10 @@ export default function useEthereum() {
       listenNetworkChange();
     }
   }
-  
+
   // 监听插件账户变动
   function listenAccountChange() {
-    const provider = getProvider()
+    const provider = getProvider();
     provider?.on("accountsChanged", (accounts: string) => {
       console.log(accounts, "=======accountsChanged");
       if (accounts.length) {
@@ -61,7 +64,7 @@ export default function useEthereum() {
 
   // 监听插件网络变动
   function listenNetworkChange() {
-    const provider = getProvider()
+    const provider = getProvider();
     provider?.on("chainChanged", (chainId: string) => {
       console.log(chainId, "=======chainId");
       if (chainId) {
@@ -77,8 +80,8 @@ export default function useEthereum() {
 
   // 连接provider
   async function connect(providerType: string) {
-    const provider = getProvider(providerType)
-    await provider?.request({method: 'eth_requestAccounts'});
+    const provider = getProvider(providerType);
+    await provider?.request({ method: "eth_requestAccounts" });
     state.address = provider?.selectedAddress;
     localStorage.setItem("providerType", providerType);
     listenAccountChange();
@@ -87,7 +90,7 @@ export default function useEthereum() {
 
   function disconnect() {
     localStorage.removeItem("providerType");
-    state.address = ""
+    state.address = "";
   }
 
   return {

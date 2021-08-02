@@ -20,7 +20,7 @@
           <span>≈${{ tokenInfo.pendingRewardUSD }}</span>
         </div>
         <div class="right">
-          <el-button class="btns" type="primary" size="small" @click="gather">
+          <el-button class="btns" type="primary" size="small" @click="gether">
             {{ $t("farm.farm21") }}
           </el-button>
         </div>
@@ -32,20 +32,32 @@
           <span>≈${{ tokenInfo.stakeUSD }}</span>
         </div>
         <div class="right">
-          <el-button
-            class="btns"
-            type="primary"
-            size="small"
-            icon="el-icon-minus"
-            @click="handleLP('minus')"
-          ></el-button>
-          <el-button
-            class="btns"
-            type="primary"
-            size="small"
-            icon="el-icon-plus"
-            @click="handleLP('add')"
-          ></el-button>
+          <template v-if="needAuth">
+            <el-button
+              class="btns auth-btn"
+              type="primary"
+              size="small"
+              @click="authToken"
+            >
+              {{ $t("transfer.transfer13") }}
+            </el-button>
+          </template>
+          <template v-else>
+            <el-button
+              class="btns"
+              type="primary"
+              size="small"
+              icon="el-icon-minus"
+              @click="handleLP('minus')"
+            ></el-button>
+            <el-button
+              class="btns"
+              type="primary"
+              size="small"
+              icon="el-icon-plus"
+              @click="handleLP('add')"
+            ></el-button>
+          </template>
         </div>
       </div>
     </div>
@@ -59,48 +71,57 @@
       :close-on-press-escape="false"
       :show-close="false"
     >
-      <div class="titles">
-        {{ addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10") }}LP
-      </div>
-      <div class="infos">
-        <div class="in flex-between">
-          <span>
-            {{ addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10") }}LP
-          </span>
-          <label>{{ $t("public.public16") }}{{ tokenInfo.stakeAmount }}</label>
+      <div
+        v-loading="loading"
+        element-loading-background="rgba(255, 255, 255, 0.8)"
+      >
+        <div class="titles">
+          {{ addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10") }}LP
         </div>
-        <div class="clear"></div>
-        <div class="to">
-          <el-input class="no-border" v-model="numberValue" placeholder="0.0">
-            <template #append><span @click="clickMax">Max</span></template>
-          </el-input>
-          <!-- <el-input v-model="numberValue" class="fl" placeholder="0"></el-input>
+        <div class="infos">
+          <div class="in flex-between">
+            <span>
+              {{
+                addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10")
+              }}LP
+            </span>
+            <label>
+              {{ $t("public.public16") }}{{ tokenInfo.stakeAmount }}
+            </label>
+          </div>
+          <div class="clear"></div>
+          <div class="to">
+            <el-input class="no-border" v-model="numberValue" placeholder="0.0">
+              <template #append><span @click="clickMax">Max</span></template>
+            </el-input>
+            <!-- <el-input v-model="numberValue" class="fl" placeholder="0"></el-input>
           <span class="fl click max" @click="clickMax">Max</span> -->
-          <span class="fr lp">{{ tokenInfo.name }}</span>
+            <span class="fr lp">{{ tokenInfo.name }}</span>
+          </div>
         </div>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
+        <div class="dialog-footer">
           <el-button @click="dialogAddOrMinus = false">
             {{ $t("public.public8") }}
           </el-button>
           <el-button type="primary" @click="confirmAddOrMinus">
             {{ $t("public.public9") }}
           </el-button>
-        </span>
-      </template>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
+import { computed, defineComponent, onMounted, ref } from "vue";
 import config from "@/config";
 import nerve from "nerve-sdk-js";
 import { ElMessage } from "element-plus";
 import { useStore } from "vuex";
 import { useI18n } from "vue-i18n";
-import { NTransfer } from "@/api/api";
+import { ETransfer, NTransfer } from "@/api/api";
+import { timesDecimals } from "@/api/util";
+import { contractAddress } from "@/hooks/farm/contractConfig";
 
 nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 export default defineComponent({
@@ -113,7 +134,8 @@ export default defineComponent({
     showId: {
       type: Boolean,
       default: false
-    }
+    },
+    isTalon: Boolean
   },
   setup(props, { emit }) {
     const store = useStore();
@@ -121,26 +143,96 @@ export default defineComponent({
     const dialogAddOrMinus = ref(false);
     const addOrMinus = ref("add");
     const numberValue = ref("");
-    // 收取收益
-    async function gather() {
+    const loading = ref(false);
+    const needAuth = ref(true);
+    const refreshAuth = ref(false);
+    onMounted(async () => {
+      getERC20Allowance();
+    });
+    async function getERC20Allowance() {
+      if (props.isTalon) {
+        needAuth.value = false;
+      } else {
+        const transfer = new ETransfer();
+        const addressInfo = store.state.addressInfo;
+        needAuth.value = await transfer.getERC20Allowance(
+          props.tokenInfo.lpToken,
+          contractAddress,
+          addressInfo.address.Ethereum
+        );
+        if (!needAuth.value) {
+          refreshAuth.value = false;
+        }
+        if (refreshAuth.value) {
+          setTimeout(() => {
+            getERC20Allowance();
+          }, 5000);
+        }
+      }
+    }
+
+    async function authToken() {
+      emit("loading", true);
+      try {
+        const transfer = new ETransfer();
+        const res = await transfer.approveERC20(
+          props.tokenInfo.lpToken,
+          contractAddress,
+          store.state.addressInfo.address.Ethereum
+        );
+        handleMsg(res);
+        refreshAuth.value = true;
+        getERC20Allowance();
+      } catch (e) {
+        ElMessage.warning({
+          message: e,
+          type: "warning"
+        });
+      }
+      emit("loading", false);
+    }
+
+    function handleMsg(data) {
+      // console.log(data, 555);
+      if (data.success) {
+        ElMessage.success({
+          message: t("transfer.transfer14"),
+          type: "success"
+        });
+      } else {
+        ElMessage.warning({ message: data.msg, type: "warning" });
+      }
+    }
+
+    async function gether() {
+      emit("loading", true);
+      await farmStake(0);
+      emit("loading", false);
+    }
+    // 收取收益 / 增加LP
+    async function farmStake(number) {
       //console.log(tokenInfo);
       // emit("charge", tokenInfo);
       // LPOperation(props.tokenInfo.pendingReward, 2);
-      emit("loading", true);
       try {
         const addressInfo = store.state.addressInfo;
-        const { stakeTokenChainId, stakeTokenAssetId, farmHash } =
-          props.tokenInfo;
+        const {
+          stakeTokenChainId,
+          stakeTokenAssetId,
+          stakeTokenDecimals,
+          farmHash
+        } = props.tokenInfo;
+        const ammount = timesDecimals(number, stakeTokenDecimals);
         const tx = await nerve.swap.farmStake(
           addressInfo.address.Talon,
           nerve.swap.token(stakeTokenChainId, stakeTokenAssetId),
           config.chainId,
           config.prefix,
-          0,
+          ammount,
           farmHash,
           ""
         );
-        handleHex(tx.hex);
+        await handleHex(tx.hex);
       } catch (e) {
         console.log(e, "gain-profit-error");
         ElMessage.warning({
@@ -148,7 +240,6 @@ export default defineComponent({
           type: "warning"
         });
       }
-      emit("loading", false);
     }
 
     function handleLP(type) {
@@ -164,13 +255,50 @@ export default defineComponent({
     function clickMax() {
       numberValue.value = props.tokenInfo.stakeAmount;
     }
-    function confirmAddOrMinus() {
+    async function confirmAddOrMinus() {
       if (addOrMinus.value === "add") {
-        LPOperation(numberValue.value, 0);
+        loading.value = true;
+        await farmStake(numberValue.value);
+        loading.value = false;
       } else {
-        LPOperation(numberValue.value, 1);
+        // farmWithdraw
+        loading.value = true;
+        await farmWithdrawal(numberValue.value);
+        loading.value = false;
+        // LPOperation(numberValue.value, 1);
       }
     }
+
+    // 退出质押
+    async function farmWithdrawal(number) {
+      try {
+        const addressInfo = store.state.addressInfo;
+        const {
+          stakeTokenChainId,
+          stakeTokenAssetId,
+          stakeTokenDecimals,
+          farmHash
+        } = props.tokenInfo;
+        const ammount = timesDecimals(number, stakeTokenDecimals);
+        const tx = await nerve.swap.farmWithdraw(
+          addressInfo.address.Talon,
+          nerve.swap.token(stakeTokenChainId, stakeTokenAssetId),
+          // config.chainId,
+          // config.prefix,
+          ammount,
+          farmHash,
+          ""
+        );
+        await handleHex(tx.hex);
+      } catch (e) {
+        console.log(e, "gain-profit-error");
+        ElMessage.warning({
+          message: e.message || e,
+          type: "warning"
+        });
+      }
+    }
+
     // 添加 - 0、减少 - 1 lp, 领取收益 -2
     function LPOperation(number, type) {}
 
@@ -184,25 +312,29 @@ export default defineComponent({
         pub: addressInfo.pub,
         signAddress: addressInfo.address.Ethereum
       });
-      // console.log(txHex, 666);
+      console.log(txHex, 666);
       const result = await transfer.broadcastHex(txHex);
       if (result && result.hash) {
+        dialogAddOrMinus.value = false;
         ElMessage.success({
           message: t("transfer.transfer14"),
           type: "success"
         });
       } else {
         ElMessage.warning({
-          message: "Create farm failed",
+          message: "Failed",
           type: "warning"
         });
       }
     }
     return {
+      needAuth,
+      authToken,
       dialogAddOrMinus,
       addOrMinus,
       numberValue,
-      gather,
+      loading,
+      gether,
       handleLP,
       clickMax,
       confirmAddOrMinus
@@ -274,11 +406,17 @@ export default defineComponent({
       .btns {
         width: 70px;
         margin-left: 20px;
+        &.auth-btn {
+          width: 100px;
+        }
         i {
           font-size: 20px;
         }
       }
     }
+  }
+  .el-overlay {
+    z-index: 1888 !important;
   }
 }
 .add-minus-dialog {
@@ -342,19 +480,18 @@ export default defineComponent({
       }
     }
   }
-  .el-dialog__footer {
-    padding: 10px 0 60px 0;
-    .dialog-footer {
-      .el-button {
-        width: 185px;
-        height: 48px;
-        background: #ffffff;
-        border: 1px solid #4a5ef2;
-      }
-      .el-button--primary {
-        background: #4a5ef2;
-        margin: 0 0 0 30px;
-      }
+
+  .dialog-footer {
+    padding: 40px 0 30px 0;
+    .el-button {
+      width: 185px;
+      height: 48px;
+      background: #ffffff;
+      border: 1px solid #4a5ef2;
+    }
+    .el-button--primary {
+      background: #4a5ef2;
+      margin-left: 20px;
     }
   }
 }

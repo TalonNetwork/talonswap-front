@@ -5,7 +5,7 @@
 <script>
 import { defineComponent } from "vue";
 import { getIconSrc } from "@/api/util";
-import defaultIcon from "@/assets/Talon.svg"
+import defaultIcon from "@/assets/Talon.svg";
 export default defineComponent({
   props: {
     icon: String

@@ -533,6 +533,7 @@ export class ETransfer {
   }
 
   async sendTransaction(transactionParameters) {
+    console.log(this.provider, 99888)
     const wallet = this.provider.getSigner();
     try {
       const tx = await wallet.sendTransaction(transactionParameters);
@@ -557,6 +558,7 @@ export class ETransfer {
       this.provider
     );
     const allowancePromise = contract.allowance(address, multySignAddress);
+    console.log(contractAddress, multySignAddress, address, 66333)
     return allowancePromise
       .then(allowance => {
         const baseAllowance = "39600000000000000000000000000";
@@ -593,6 +595,7 @@ export class ETransfer {
       return { success: false, msg: "failed approveERC20" + failed };
     }
     delete transactionParameters.from; //etherjs 4.0 from参数无效 报错
+    console.log(transactionParameters, 333333333333333)
     return this.sendTransaction(transactionParameters);
   }
 

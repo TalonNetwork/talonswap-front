@@ -153,7 +153,7 @@ export default defineComponent({
     address: {
       immediate: true,
       handler(val) {
-        console.log(val, 444)
+        console.log(val, 444);
         if (val) {
           this.talonAddress = getTalonAddress(val);
           this.getList();

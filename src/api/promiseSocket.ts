@@ -1,8 +1,40 @@
+interface Params {
+  url: string;
+  channel: string;
+  params: any;
+}
+
+interface Socket {
+  [key: string]: WebSocketBuilder;
+}
+
+interface PCallback {
+  resolve: Callback,
+  reject? :Callback
+}
+
+interface UpdateHandle {
+  [key: string]: PCallback[];
+}
+
+type Callback = (data: any) => void;
+
+
+
 class WebSocketBuilder {
-  static sockets = {};
+  static sockets: Socket = {};
+
+  timeout: number;
+  timer1: any;
+  timer2: any;
+  lockReconnect: boolean;
+  url: string;
+  updateHandle: UpdateHandle;
+  ws: WebSocket | null;
+  status: string
 
   onOpen = () => {};
-  constructor(url) {
+  constructor(url: string) {
     this.timeout = 20000;
     this.timer1 = null;
     this.timer2 = null;
@@ -15,7 +47,7 @@ class WebSocketBuilder {
     // this.initEvent();
   }
 
-  connect(onOpen) {
+  connect(onOpen: () => void) {
     const ws = (this.ws = new WebSocket(this.url));
     this.status = "";
     this.onOpen = onOpen;
@@ -41,7 +73,7 @@ class WebSocketBuilder {
     };
   }
 
-  listen(channel, params, resolve, reject) {
+  listen(channel: string, params: any, resolve: Callback, reject?: Callback) {
     // console.log(this.ws?.readyState, 789);
     if (this.ws?.readyState === 0) {
       setTimeout(() => {
@@ -62,11 +94,11 @@ class WebSocketBuilder {
     }
   }
 
-  send(msg) {
+  send(msg: string) {
     this.ws?.send(msg);
   }
 
-  unListen(channel) {
+  unListen(channel: string) {
     if (this.ws?.readyState === 0) {
       setTimeout(() => {
         this.unListen(channel);
@@ -77,7 +109,7 @@ class WebSocketBuilder {
     }
   }
 
-  handleMessage(msg) {
+  handleMessage(msg: any) {
     const res = JSON.parse(msg.data);
     if (!res.data || !res.action) return;
     switch (res.action) {
@@ -126,8 +158,8 @@ class WebSocketBuilder {
   }
 }
 
-export function listen(data) {
-  const { url, channel, params, success } = data;
+export function listen(data: Params) {
+  const { url, channel, params } = data;
   const socket = WebSocketBuilder.sockets[url];
   if (!socket) {
     const newSocket = new WebSocketBuilder(url);
@@ -147,7 +179,7 @@ export function listen(data) {
   }
 }
 
-export function unListen(url, channel) {
+export function unListen(url: string, channel: string) {
   const socket = WebSocketBuilder.sockets[url];
   if (!socket) {
     console.log("没有websocket任务，不需要关闭");

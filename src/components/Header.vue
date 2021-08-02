@@ -155,7 +155,7 @@ export default defineComponent({
       disconnect();
       manageAccount.value = false;
     }
-    
+
     const activeIndex = ref("");
     watch(
       () => route.path,

@@ -163,6 +163,14 @@ export default defineComponent({
         heterogeneousChainMultySignAddress,
         this.father.address
       );
+      if (!this.needAuth) {
+        this.refreshAuth = false;
+      }
+      if (this.refreshAuth) {
+        setTimeout(() => {
+          this.getERC20Allowance();
+        }, 5000)
+      }
     },
     async getGasPrice() {
       this.fee = await this.transfer.getGasPrice(
@@ -206,6 +214,8 @@ export default defineComponent({
           this.father.address
         );
         this.handleMsg(res);
+        this.refreshAuth = true;
+        this.getERC20Allowance();
       } catch (e) {
         this.$message({
           message: e,

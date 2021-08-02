@@ -127,7 +127,8 @@ export default {
       });
       const currentAccount = this.$store.state.addressInfo;
       currentAccount.visiableAssets = select;
-      const accountList = JSON.parse(localStorage.getItem("accountList") || "") || [];
+      const accountList =
+        JSON.parse(localStorage.getItem("accountList") || "") || [];
       accountList.map(v => {
         if (v.pub === currentAccount.pub) {
           v.visiableAssets = select;
@@ -177,7 +178,7 @@ export default {
         }
         span {
           font-size: 14px;
-          color: #7E87C2;
+          color: #7e87c2;
         }
       }
       .el-checkbox {

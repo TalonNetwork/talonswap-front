@@ -1,23 +1,31 @@
 <template>
   <div class="farm-item-symbol">
-    <div class="mult-img-wrap" v-if="imgList.length > 1">
-      <img :src="imgList[0]" alt="" />
-      <img :src="imgList[1]" alt="" />
+    <div class="mult-img-wrap" v-if="symbols > 1">
+      <symbol-icon :icon="symbols[0]"></symbol-icon>
+      <symbol-icon :icon="symbols[1]"></symbol-icon>
     </div>
     <div class="img-wrap" v-else>
-      <img :src="imgList[0]" alt="" />
+      <symbol-icon :icon="symbols[0]"></symbol-icon>
     </div>
     <div class="name">{{ name }}</div>
   </div>
 </template>
 
 <script lang="ts">
-type ImgList = string[];
-import { defineComponent, PropType } from "vue";
+import { defineComponent, computed } from "vue";
+import SymbolIcon from "@/components/SymbolIcon.vue";
 export default defineComponent({
   props: {
-    imgList: Array as PropType<ImgList>,
     name: String
+  },
+  components: {
+    SymbolIcon
+  },
+  setup(props) {
+    const symbols = computed(() => props.name?.split("-"));
+    return {
+      symbols
+    }
   }
 });
 </script>

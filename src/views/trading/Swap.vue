@@ -172,7 +172,7 @@ export default defineComponent({
       font-size: 16px;
       margin: 3px 0 0 5px;
       cursor: pointer;
-      color: #4A5EF2;
+      color: #4a5ef2;
     }
   }
   .swap-setting-info {
