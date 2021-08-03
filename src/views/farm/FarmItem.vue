@@ -4,43 +4,48 @@
     v-loading="loading"
     element-loading-background="rgba(255, 255, 255, 0.8)"
   >
-    <div class="lis" v-for="(item, index) of list" :key="index">
-      <div class="title">
-        <farm-symbol :name="item.name"></farm-symbol>
-        <ul>
-          <li class="fl">
-            <p>{{ $t("farm.farm2") }}</p>
-            <h2>{{ item.pendingReward }} {{ item.syrupTokenSymbol }}</h2>
-          </li>
-          <li class="fl">
-            <p>{{ $t("farm.farm3") }}</p>
-            <h2>{{ item.apr }}%</h2>
-          </li>
-          <li class="fl">
-            <p>{{ $t("farm.farm4") }}</p>
-            <h2>${{ item.tatalStakeTokenUSD }}</h2>
-          </li>
-          <li class="fl">
-            <p>{{ $t("farm.farm5") }}</p>
-            <h2>{{ item.syrupTokenBalance }} {{ item.syrupTokenSymbol }}</h2>
-          </li>
-        </ul>
-        <div class="link view" @click="showId(item.farmHash)">
-          {{ $t("farm.farm6") }}
-          <i
-            :class="item.showId ? 'el-icon-arrow-down' : 'el-icon-arrow-right'"
-          ></i>
+    <el-empty description="No Data" v-if="!list.length"></el-empty>
+    <template v-else>
+      <div class="lis" v-for="(item, index) of list" :key="index">
+        <div class="title">
+          <farm-symbol :name="item.name"></farm-symbol>
+          <ul>
+            <li class="fl">
+              <p>{{ $t("farm.farm2") }}</p>
+              <h2>{{ item.pendingReward }} {{ item.syrupTokenSymbol }}</h2>
+            </li>
+            <li class="fl">
+              <p>{{ $t("farm.farm3") }}</p>
+              <h2>{{ item.apr }}%</h2>
+            </li>
+            <li class="fl">
+              <p>{{ $t("farm.farm4") }}</p>
+              <h2>${{ item.tatalStakeTokenUSD }}</h2>
+            </li>
+            <li class="fl">
+              <p>{{ $t("farm.farm5") }}</p>
+              <h2>{{ item.syrupTokenBalance }} {{ item.syrupTokenSymbol }}</h2>
+            </li>
+          </ul>
+          <div class="link view" @click="showId(item.farmHash)">
+            {{ $t("farm.farm6") }}
+            <i
+              :class="
+                item.showId ? 'el-icon-arrow-down' : 'el-icon-arrow-right'
+              "
+            ></i>
+          </div>
         </div>
+        <collapse-transition>
+          <DetailsBar
+            :tokenInfo="item"
+            :isTalon="isTalon"
+            v-show="item.showDetail"
+            @loading="handleLoading"
+          ></DetailsBar>
+        </collapse-transition>
       </div>
-      <collapse-transition>
-        <DetailsBar
-          :tokenInfo="item"
-          :isTalon="isTalon"
-          v-show="item.showDetail"
-          @loading="handleLoading"
-        ></DetailsBar>
-      </collapse-transition>
-    </div>
+    </template>
     <div class="more">
       <span class="link" @click="createFarm">{{ $t("farm.farm11") }}</span>
     </div>
@@ -109,7 +114,7 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .farm-item {
   background: #ffffff;
   border-radius: 20px;

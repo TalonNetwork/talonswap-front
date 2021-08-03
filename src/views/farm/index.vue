@@ -45,11 +45,13 @@
       v-show="current === 1"
       :list="uniList"
       :loading="uniLoading"
+      @handleLoading="handleLoading"
     ></farm-item>
     <farm-item
       v-show="current === 2"
       :list="talonList"
       :loading="talonLoading"
+      @handleLoading="handleLoading"
       isTalon
     ></farm-item>
   </div>
@@ -62,33 +64,16 @@ import {
   toRefs,
   onMounted,
   ref,
-  onUnmounted
+  onUnmounted,
+  watch
 } from "vue";
-import { ethers } from "ethers";
-import {
-  divisionAndFix,
-  divisionDecimals,
-  Minus,
-  timesDecimals,
-  Division,
-  Times,
-  tofix
-} from "../../api/util";
 import FarmItem from "./FarmItem.vue";
 import useFarmData from "@/hooks/farm/useData";
-import type { TalonFarmItem } from "@/hooks/farm/useData";
 import nerve from "nerve-sdk-js";
-const Signature = require("elliptic/lib/elliptic/ec/signature");
-// const txsignatures = require("nerve-sdk-js/lib/model/txsignatures");
-// const BufferReader = nerve.utils.bufferreader;
-// const txs = nerve.model.txs;
-import http from "@/api/http";
 import config from "@/config";
 import { useI18n } from "vue-i18n";
-import { useStore } from "vuex";
-nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 
-const contractAddress = "0x0faee22173db311f4c57c81ec6867e5deef6c218";
+nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 
 export default defineComponent({
   name: "Farm",
@@ -98,207 +83,45 @@ export default defineComponent({
     const talonLoading = ref(true);
     const current = ref(1);
     const state = reactive({
-      contractAddress: "0x0faee22173db311f4c57c81ec6867e5deef6c218", //合约地址
       sortList: [
         { value: "1", label: t("farmRankType.1") },
         { value: "2", label: t("farmRankType.2") }
       ],
       sortValue: "1",
-      mortgageValue: false,
-
-      farmLoading: false, //加载动画
-      tokenList: [] as any, //token list
-      tokenInfo: {}, //弹框显示inof
-
-      dialogAddOrMinus: false, //加减弹框
-      formAddOrMinus: {
-        nums: ""
-      },
-      addOrMinus: "add", //加减类型
-      numberValue: "" //数量
+      mortgageValue: false
     });
-    const store = useStore();
-    const { talonList, getFarmData, getUserFarm, uniList, getUniData } = useFarmData();
-    const addressInfo = store.state.addressInfo;
+    const {
+      talonList,
+      getFarmData,
+      getUserFarm,
+      uniList,
+      getUniData,
+      filterList
+    } = useFarmData();
+    watch(
+      () => [state.sortValue, state.mortgageValue],
+      ([type, status]) => {
+        console.log(type, status, 999);
+        // @ts-ignore
+        filterList(type, status);
+      }
+    );
     onMounted(async () => {
       // init();
       await getFarmData();
-      const talon = addressInfo?.address?.Talon;
-      if (talon) {
-        getUserFarm(talon);
-      }
+      getUserFarm();
       talonLoading.value = false;
     });
 
     let timer: any;
     onMounted(async () => {
-      const address = addressInfo?.address?.Ethereum;
-      await getUniData(address);
+      await getUniData();
       uniLoading.value = false;
       timer = setInterval(async () => {
-        await getUniData(address);
+        await getUniData();
       }, 10000);
     });
     onUnmounted(() => clearInterval(timer));
-
-    async function getTokenList() {
-      // The Contract interface
-      let abi = [
-        "function owner() public view returns (address)",
-        "function pendingToken(uint256 _pid, address _user) external view returns (uint256)",
-        "function poolInfo(uint256 input) external view returns (address,address,uint256,uint256,uint256,uint256,uint256)",
-        "function poolLength() external view returns (uint256)",
-        "function userInfo(uint256 _pid, address _user) external view returns (uint256,uint256)"
-      ];
-      // Connect to the network
-      let provider = ethers.getDefaultProvider("ropsten");
-      // 使用Provider 连接合约，将只有对合约的可读权限
-      let contract = new ethers.Contract(contractAddress, abi, provider);
-      //console.log(contract);
-
-      let poolLengthValue = await contract.poolLength();
-      console.log(poolLengthValue, 66655);
-      let poolLength = Array.from({
-        length: Number(poolLengthValue.toString())
-      });
-      //console.log(poolLength);
-
-      let tokenList = [];
-      for (let item in poolLength) {
-        let tokenInfo = {
-          name: "",
-          earnings: "0",
-          earningsSymbol: "",
-          annualEarnings: "",
-          //APR = 365 * ( 每日出块数量  * candyPrice 1 * candyPerBlock / candyDecimals )
-          //除以
-          //( lpPrice 1 * lpSupply / lpDecimals )
-          totalValue: "",
-          totalReward: "",
-          lpToken: "",
-          lpBalance: "0",
-          lpPledged: "0",
-          candyToken: "",
-          lpDecimals: "",
-          candyDecimals: "",
-          showId: false,
-          pid: Number(item)
-        };
-        let poolInfoValue = await contract.poolInfo(Number(item));
-        tokenInfo.lpToken = poolInfoValue[0];
-        tokenInfo.candyToken = poolInfoValue[1];
-
-        //{'lpToken','candyToken','lastRewardBlock','accPerShare','candyPerBlock','lpSupply','candyBalance'};
-        //{'name','earnings','annualEarnings','totalValue','totalReward'}
-        let abiTwo = [
-          "function symbol() public view returns (string)",
-          "function balanceOf(address account) external view returns (uint256)",
-          "function decimals() public view returns (uint8)"
-        ];
-        let contractTwo = new ethers.Contract(
-          tokenInfo.lpToken,
-          abiTwo,
-          provider
-        );
-        let symbolValue = await contractTwo.symbol();
-        tokenInfo.name = symbolValue.toString();
-        let decimalsValue = await contractTwo.decimals();
-        console.log(decimalsValue, 112233666);
-        tokenInfo.lpDecimals = decimalsValue.toString();
-        tokenInfo.totalReward = divisionAndFix(
-          poolInfoValue[6],
-          tokenInfo.lpDecimals,
-          2
-        );
-
-        if (store.state.account) {
-          let pendingTokenValue = await contract.pendingToken(
-            Number(item),
-            store.state.account
-          );
-          console.log(pendingTokenValue, "====pendingTokenValue====");
-          tokenInfo.earnings = divisionDecimals(
-            pendingTokenValue.toString(),
-            Number(tokenInfo.lpDecimals)
-          ).toString();
-
-          let userInfoValue = await contract.userInfo(
-            Number(item),
-            store.state.account
-          );
-          tokenInfo.lpPledged = divisionDecimals(
-            userInfoValue[0].toString(),
-            Number(tokenInfo.lpDecimals)
-          ).toString();
-
-          let balanceOfValue = await contractTwo.balanceOf(store.state.account);
-          tokenInfo.lpBalance = divisionDecimals(
-            balanceOfValue.toString(),
-            Number(tokenInfo.lpDecimals)
-          ).toString();
-        }
-
-        let abiThree = [
-          "function symbol() public view returns (string)",
-          "function decimals() public view returns (uint8)"
-        ];
-        let contractThree = new ethers.Contract(
-          tokenInfo.candyToken,
-          abiThree,
-          provider
-        );
-        let earningsSymbol = await contractThree.symbol();
-        console.log(earningsSymbol, 654);
-        tokenInfo.earningsSymbol = earningsSymbol.toString();
-
-        let earningsDecimals = await contractThree.decimals();
-        tokenInfo.candyDecimals = earningsDecimals.toString();
-
-        let dayNumber = 5760; //每日出块数量(86400/15=5760)
-        let candyPrice = 1; //todo 待取值
-        let lpPrice = 1; //todo 待取值
-        let c = Times(
-          Times(dayNumber.toString(), candyPrice.toString()).toString(),
-          poolInfoValue[4].toString()
-        ).toString();
-        //let a = 365 * (5760 * 1 * 88 / tokenInfo.candyDecimals); //365 * ( 每日出块数量  * candyPrice * candyPerBlock / candyDecimals )
-        let a = Times(
-          "365",
-          Division(c, tokenInfo.candyDecimals).toString()
-        ).toString();
-        //let b = 1 * 200000 / 50;  //lpPrice 1 * lpSupply / lpDecimals
-        let b = Division(
-          Times(lpPrice.toString(), poolInfoValue[5].toString()).toString(),
-          tokenInfo.lpDecimals
-        ).toString();
-        //APR = 365 * ( 每日出块数量  * candyPrice 1 * candyPerBlock / candyDecimals )
-        //除以
-        //( lpPrice 1 * lpSupply / lpDecimals )
-        tokenInfo.annualEarnings = tofix(
-          Division(a.toString(), b.toString()).toString(),
-          2,
-          1
-        ).toString();
-
-        tokenInfo.totalValue = Times(
-          lpPrice.toString(),
-          divisionDecimals(poolInfoValue[5], Number(tokenInfo.lpDecimals))
-        ).toString();
-
-        tokenList.push(tokenInfo);
-      }
-      console.log(tokenList, 9999988888);
-      uniList.value = tokenList;
-    }
-
-    //详情
-    function showId(hash: string) {
-      for (let item of talonList.value) {
-        if (item.farmHash === hash) {
-          item.showDetail = !item.showDetail;
-        }
-      }
-    }
 
     function handleLoading(status: boolean) {
       if (current.value === 1) {
@@ -308,24 +131,14 @@ export default defineComponent({
       }
     }
 
-    //打开加减弹框
-    function openDialogAddOrMinus(tokenInfo: any, addOrMinus: any) {
-      state.numberValue = "";
-      state.dialogAddOrMinus = true;
-      state.addOrMinus = addOrMinus;
-      state.tokenInfo = tokenInfo;
-    }
-
     return {
       current,
       uniLoading,
       talonLoading,
       ...toRefs(state),
-      showId,
       talonList,
       uniList,
-      handleLoading,
-      openDialogAddOrMinus
+      handleLoading
     };
   },
   components: {

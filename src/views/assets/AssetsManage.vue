@@ -117,6 +117,7 @@ export default {
     },
     close() {
       this.$emit("update:showAssetManage", false);
+      this.searchVal = "";
     },
     confirm() {
       const select = [];

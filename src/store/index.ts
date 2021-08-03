@@ -34,6 +34,7 @@ export default createStore<State>({
       })
       return chain;
     },
+    // metamask 网络错误
     wrongChain(state) {
       const chainId = state.chainId;
       return Object.keys(_networkInfo).every(v => {

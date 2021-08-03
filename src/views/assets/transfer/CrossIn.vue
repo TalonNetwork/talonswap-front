@@ -16,6 +16,9 @@
         <i class="iconfont icon-tiaozhuanlianjie"></i>
       </span>
     </div>
+    <div class="wrong-net" v-if="father.disableTx">
+      {{ $t("public.public14") }}
+    </div>
     <div class="transfer-content">
       <custom-input
         v-model:inputVal="amount"
@@ -38,7 +41,12 @@
           noEnoughBalance ? $t("transfer.transfer15") : $t("transfer.transfer9")
         }}
       </el-button>
-      <el-button type="primary" v-else @click="approveERC20">
+      <el-button
+        type="primary"
+        v-else
+        @click="approveERC20"
+        :disabled="father.disableTx"
+      >
         {{ $t("transfer.transfer13") }}
       </el-button>
     </div>
@@ -79,6 +87,14 @@ export default defineComponent({
           this.amountErrorTip = "";
         }
       }
+    },
+    "father.allAssetsList": {
+      deep: true,
+      handler() {
+        console.log(99999);
+        this.filterAssets();
+        this.selectAsset(this.father.transferAsset);
+      }
     }
   },
   data() {
@@ -100,7 +116,8 @@ export default defineComponent({
         !Number(this.fee) ||
         !Number(this.amount) ||
         !Number(this.balance) ||
-        this.amountErrorTip
+        this.amountErrorTip ||
+        this.father.disableTx
       );
     },
     // 余额不足
@@ -118,6 +135,7 @@ export default defineComponent({
     filterAssets() {
       // console.log(123465,this.father);
       const chain = _networkInfo[this.father.network];
+      if (this.father.disableTx || !chain) return;
       this.assetsList = this.father.allAssetsList.filter(v => {
         return v.heterogeneousList?.filter(item => {
           return item.heterogeneousChainId === chain.chainId;
@@ -126,6 +144,7 @@ export default defineComponent({
     },
     async selectAsset(asset) {
       console.log(asset, 789654, this.father);
+      if (this.father.disableTx) return;
       this.checkAsset(asset);
     },
     // 检查资产是否支持从该异构链转入
@@ -169,7 +188,7 @@ export default defineComponent({
       if (this.refreshAuth) {
         setTimeout(() => {
           this.getERC20Allowance();
-        }, 5000)
+        }, 5000);
       }
     },
     async getGasPrice() {
@@ -191,7 +210,7 @@ export default defineComponent({
       }
       // console.log(this.balance, "===balance===");
     },
-    superLong(str, len = 8) {
+    superLong(str, len = 6) {
       return superLong(str, len);
     },
     max() {
@@ -275,6 +294,9 @@ export default defineComponent({
   }
   .transfer-content {
     margin: 35px 0 60px;
+  }
+  .wrong-net {
+    margin-top: 10px;
   }
 }
 </style>

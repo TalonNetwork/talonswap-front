@@ -68,18 +68,14 @@
           >
             {{ $t("assets.assets4") }}
           </el-button>
-          <el-button
-            @click="transfer(scope.row, 'general')"
-            type="text"
-            :disabled="disableTx"
-          >
+          <el-button @click="transfer(scope.row, 'general')" type="text">
             {{ $t("assets.assets5") }}
           </el-button>
           <el-button
             @click="transfer(scope.row, 'withdrawal')"
             type="text"
-            v-if="isShowCrossHandle(scope.row.source)"
             :disabled="disableTx"
+            v-if="isShowCrossHandle(scope.row.source)"
           >
             {{ $t("assets.assets6") }}
           </el-button>
@@ -157,14 +153,6 @@ export default defineComponent({
         if (val) {
           this.talonAddress = getTalonAddress(val);
           this.getList();
-        }
-      }
-    },
-    disableTx: {
-      immediate: true,
-      handler(val) {
-        if (val) {
-          this.showTransfer = false;
         }
       }
     }

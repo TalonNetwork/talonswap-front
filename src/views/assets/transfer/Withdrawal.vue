@@ -16,6 +16,9 @@
         <i class="iconfont icon-tiaozhuanlianjie"></i>
       </span>
     </div>
+    <div class="wrong-net" v-if="father.disableTx">
+      {{ $t("public.public14") }}
+    </div>
     <div class="transfer-content">
       <custom-input
         v-model:inputVal="amount"
@@ -104,6 +107,13 @@ export default defineComponent({
           this.amountErrorTip = "";
         }
       }
+    },
+    "father.allAssetsList": {
+      deep: true,
+      handler() {
+        this.filterAssets();
+        this.selectAsset(this.father.transferAsset);
+      }
     }
   },
   computed: {
@@ -113,7 +123,8 @@ export default defineComponent({
         !Number(this.balance) ||
         !Number(this.fee) ||
         this.addressError ||
-        this.amountErrorTip
+        this.amountErrorTip ||
+        this.father.disableTx
       );
     }
   },
@@ -127,6 +138,7 @@ export default defineComponent({
     filterAssets() {
       // console.log(123465,this.father);
       const chain = _networkInfo[this.father.network];
+      if (this.father.disableTx || !chain) return;
       this.assetsList = this.father.allAssetsList.filter(v => {
         return v.heterogeneousList?.filter(item => {
           return item.heterogeneousChainId === chain.chainId;
@@ -134,6 +146,7 @@ export default defineComponent({
       });
     },
     selectAsset(asset) {
+      if (this.father.disableTx) return;
       this.fee = 0;
       this.amount = "";
       this.balance = "";
@@ -241,7 +254,7 @@ export default defineComponent({
       }
       this.loading = false;
     },
-    superLong(str, len = 8) {
+    superLong(str, len = 6) {
       return superLong(str, len);
     }
   }
@@ -263,6 +276,9 @@ export default defineComponent({
     color: #7e87c2;
     font-size: 14px;
     margin-top: 20px;
+  }
+  .wrong-net {
+    margin-top: 10px;
   }
 }
 </style>

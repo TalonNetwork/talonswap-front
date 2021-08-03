@@ -54,7 +54,7 @@
       <div class="right pd_40">
         <div class="title">
           Farm
-          <span class="more">
+          <span class="more" @click="toUrl">
             {{ $t("home.home9") }}
             <i class="el-icon-arrow-right"></i>
           </span>
@@ -76,7 +76,9 @@
                 <p class="value">{{ item.syrupTokenSymbol }}</p>
               </div>
             </div>
-            <div class="handle">{{ $t("home.home11") }}</div>
+            <div class="handle click" @click="addLP(item)" v-if="talonAddress">
+              {{ $t("home.home11") }}
+            </div>
           </div>
         </div>
       </div>
@@ -95,21 +97,36 @@
         <p class="value">${{ txInfo.fee }}</p>
       </div>
     </div>
+    <lp-dialog
+      v-model:showLPDialog="showLPDialog"
+      :loading="dialogLoading"
+      :balance="lpBalance"
+      addOrMinus="add"
+      :lpName="addLpInfo.name"
+      :decimal="addLpInfo.stakeTokenDecimals"
+      @confirm="confirmAddOrMinus"
+    ></lp-dialog>
   </div>
 </template>
 
 <script>
 import FarmSymbol from "@/views/farm/FarmSymbol.vue";
+import LpDialog from "@/components/LpDialog";
 import { listen, unListen } from "@/api/websocket";
 import config from "@/config";
-import { genId, divisionDecimals } from "@/api/util";
+import { genId, divisionDecimals, timesDecimals } from "@/api/util";
+import { getAssetBalance } from "@/model";
+import { NTransfer } from "@/api/api";
+import nerve from "nerve-sdk-js";
+nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 
 const url = config.WS_URL;
 
 export default {
   name: "Home",
   components: {
-    FarmSymbol
+    FarmSymbol,
+    LpDialog
   },
   props: {},
   data() {
@@ -118,8 +135,17 @@ export default {
       overviewData: {},
       rewardInfo: {},
       farmList: [],
-      txInfo: {}
+      txInfo: {},
+      showLPDialog: false,
+      dialogLoading: false,
+      addLpInfo: {},
+      lpBalance: ""
     };
+  },
+  computed: {
+    talonAddress() {
+      return this.$store.state.addressInfo?.address.Talon;
+    }
   },
   mounted() {
     this.loading = this.$loading({
@@ -220,6 +246,78 @@ export default {
           this.txInfo = data;
         }
       });
+    },
+    addLP(item) {
+      this.showLPDialog = true;
+      this.addLpInfo = item;
+      this.getBalance();
+    },
+    async getBalance() {
+      const { stakeTokenChainId, stakeTokenAssetId, stakeTokenDecimals } =
+        this.addLpInfo;
+      const res = await getAssetBalance(
+        stakeTokenChainId,
+        stakeTokenAssetId,
+        this.talonAddress
+      );
+      this.lpBalance = divisionDecimals(res.balance, stakeTokenDecimals);
+    },
+    async confirmAddOrMinus(amount) {
+      this.dialogLoading = true;
+      try {
+        const {
+          stakeTokenChainId,
+          stakeTokenAssetId,
+          stakeTokenDecimals,
+          farmHash
+        } = this.addLpInfo;
+        const ammount = timesDecimals(amount, stakeTokenDecimals);
+        const tx = await nerve.swap.farmStake(
+          this.talonAddress,
+          nerve.swap.token(stakeTokenChainId, stakeTokenAssetId),
+          config.chainId,
+          config.prefix,
+          ammount,
+          farmHash,
+          ""
+        );
+        await this.handleHex(tx.hex);
+      } catch (e) {
+        console.log(e, "add-lp-error");
+        this.$message({
+          message: e.message || e,
+          type: "warning"
+        });
+      }
+      this.dialogLoading = false;
+    },
+    async handleHex(hex) {
+      const tAssemble = nerve.deserializationTx(hex);
+
+      const transfer = new NTransfer({ chain: "NERVE" });
+      const addressInfo = this.$store.state.addressInfo;
+      const txHex = await transfer.getTxHex({
+        tAssemble,
+        pub: addressInfo.pub,
+        signAddress: addressInfo.address.Ethereum
+      });
+      console.log(txHex, 666);
+      const result = await transfer.broadcastHex(txHex);
+      if (result && result.hash) {
+        this.showLPDialog = false;
+        this.$message({
+          message: this.$t("transfer.transfer14"),
+          type: "success"
+        });
+      } else {
+        this.$message({
+          message: "Failed",
+          type: "warning"
+        });
+      }
+    },
+    toUrl() {
+      this.$router.push("/farm");
     }
   }
 };

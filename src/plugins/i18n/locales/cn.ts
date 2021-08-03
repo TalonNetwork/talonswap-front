@@ -1,4 +1,9 @@
 const cn = {
+  header: {
+    header1: "交易",
+    header2: "流动性",
+    header3: "连接钱包"
+  },
   public: {
     public1: "资产",
     public2: "可用",
@@ -16,7 +21,6 @@ const cn = {
     public14: "网络错误",
     public15: "手续费: ",
     public16: "余额: ",
-    
   },
   home: {
     home1: "总质押: ",

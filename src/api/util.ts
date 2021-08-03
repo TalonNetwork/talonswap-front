@@ -46,7 +46,7 @@ export const Division = (nu: Big, arg: Big) => {
 };
 
 // 数字乘以精度系数
-export const timesDecimals = (nu: string, decimals: number) => {
+export const timesDecimals = (nu: string, decimals: string | number) => {
   if (decimals === 0) {
     return nu;
   }
@@ -58,7 +58,7 @@ export const timesDecimals = (nu: string, decimals: number) => {
 /**
  * 数字除以精度系数
  */
-export const divisionDecimals = (nu: string, decimals: number) => {
+export const divisionDecimals = (nu: string, decimals: string | number) => {
   if (decimals === 0) {
     return nu;
   }
@@ -283,7 +283,7 @@ export const _networkInfo = {
     color: "#56bff3",
     mainAsset: "NERVE"
   },
-  /* Ethereum: {
+  Ethereum: {
     name: "Ethereum",
     chainId: 101,
     origin: ETHOrigin,
@@ -291,7 +291,7 @@ export const _networkInfo = {
     mainAsset: "ETH",
     ropsten: "0x3",
     homestead: "0x1"
-  }, */
+  },
   // BSC: {
   //   name: "BSC",
   //   chainId: 102,
@@ -301,15 +301,15 @@ export const _networkInfo = {
   //   ropsten: "0x61",
   //   homestead: "0x38"
   // },
-  Heco: {
-    name: "Heco",
-    chainId: 103,
-    origin: HTOrigin,
-    color: "#336adb",
-    mainAsset: "HT",
-    ropsten: "0x100",
-    homestead: "0x80"
-  },
+  // Heco: {
+  //   name: "Heco",
+  //   chainId: 103,
+  //   origin: HTOrigin,
+  //   color: "#336adb",
+  //   mainAsset: "HT",
+  //   ropsten: "0x100",
+  //   homestead: "0x80"
+  // },
   /* OKExChain: {
     name: "OKExChain",
     chainId: 104,

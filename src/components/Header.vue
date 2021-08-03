@@ -13,8 +13,10 @@
         text-color="#fff"
         active-text-color="#fff"
       >
-        <el-menu-item index="trading">交易</el-menu-item>
-        <el-menu-item index="liquidity">流动性</el-menu-item>
+        <!-- <el-menu-item index="trading">{{ $t("header.header1") }}</el-menu-item> -->
+        <!-- <el-menu-item index="liquidity">
+          {{ $t("header.header2") }}
+        </el-menu-item> -->
         <el-menu-item index="farm">Farm</el-menu-item>
         <!-- <el-menu-item index="info">Info</el-menu-item> -->
       </el-menu>
@@ -30,7 +32,7 @@
           v-if="!address"
           @click="showConnectDialog(true)"
         >
-          连接钱包
+          {{ $t("header.header3") }}
         </div>
         <div v-else @click="manageAccount = true">
           {{ superLong(address, 4) }}
@@ -104,7 +106,7 @@ export default defineComponent({
     const store = useStore();
     const router = useRouter();
     const route = useRoute();
-    console.log(store, 66);
+    // console.log(store, 66);
     // const showConnect = store.state.showConnect;
     const { address, chainId, initProvider, connect, disconnect } =
       useEthereum();
@@ -118,7 +120,7 @@ export default defineComponent({
           if (!currentAccount) {
             router.push("/login");
           }
-          console.log(currentAccount, 9999);
+          // console.log(currentAccount, 9999);
           store.commit("setCurrentAddress", currentAccount || {});
         }
       },

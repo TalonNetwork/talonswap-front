@@ -61,54 +61,15 @@
         </div>
       </div>
     </div>
-    <el-dialog
-      title=""
-      center
-      width="470px"
-      custom-class="add-minus-dialog"
-      v-model="dialogAddOrMinus"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      :show-close="false"
-    >
-      <div
-        v-loading="loading"
-        element-loading-background="rgba(255, 255, 255, 0.8)"
-      >
-        <div class="titles">
-          {{ addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10") }}LP
-        </div>
-        <div class="infos">
-          <div class="in flex-between">
-            <span>
-              {{
-                addOrMinus === "add" ? $t("farm.farm20") : $t("farm.farm10")
-              }}LP
-            </span>
-            <label>
-              {{ $t("public.public16") }}{{ tokenInfo.stakeAmount }}
-            </label>
-          </div>
-          <div class="clear"></div>
-          <div class="to">
-            <el-input class="no-border" v-model="numberValue" placeholder="0.0">
-              <template #append><span @click="clickMax">Max</span></template>
-            </el-input>
-            <!-- <el-input v-model="numberValue" class="fl" placeholder="0"></el-input>
-          <span class="fl click max" @click="clickMax">Max</span> -->
-            <span class="fr lp">{{ tokenInfo.name }}</span>
-          </div>
-        </div>
-        <div class="dialog-footer">
-          <el-button @click="dialogAddOrMinus = false">
-            {{ $t("public.public8") }}
-          </el-button>
-          <el-button type="primary" @click="confirmAddOrMinus">
-            {{ $t("public.public9") }}
-          </el-button>
-        </div>
-      </div>
-    </el-dialog>
+    <lp-dialog
+      v-model:showLPDialog="dialogAddOrMinus"
+      :loading="loading"
+      :balance="balance"
+      :addOrMinus="addOrMinus"
+      :lpName="tokenInfo.name"
+      :decimal="tokenInfo.stakeTokenDecimals"
+      @confirm="confirmAddOrMinus"
+    ></lp-dialog>
   </div>
 </template>
 
@@ -120,12 +81,18 @@ import { ElMessage } from "element-plus";
 import { useStore } from "vuex";
 import { useI18n } from "vue-i18n";
 import { ETransfer, NTransfer } from "@/api/api";
-import { timesDecimals } from "@/api/util";
-import { contractAddress } from "@/hooks/farm/contractConfig";
+import { timesDecimals, divisionDecimals } from "@/api/util";
+import { contractAddress, txAbi } from "@/hooks/farm/contractConfig";
+import { ethers } from "ethers";
+import { getAssetBalance } from "@/model";
+import LpDialog from "@/components/LpDialog";
 
 nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 export default defineComponent({
   name: "details-bar",
+  components: {
+    LpDialog
+  },
   props: {
     tokenInfo: {
       type: Object,
@@ -142,10 +109,13 @@ export default defineComponent({
     const { t } = useI18n();
     const dialogAddOrMinus = ref(false);
     const addOrMinus = ref("add");
-    const numberValue = ref("");
     const loading = ref(false);
     const needAuth = ref(true);
     const refreshAuth = ref(false);
+    // const balance = computed(() => {
+
+    // })
+    const balance = ref(0);
     onMounted(async () => {
       getERC20Allowance();
     });
@@ -206,14 +176,15 @@ export default defineComponent({
 
     async function gether() {
       emit("loading", true);
-      await farmStake(0);
+      if (props.isTalon) {
+        await farmStake(0);
+      } else {
+        await LPOperation(2, 0);
+      }
       emit("loading", false);
     }
     // 收取收益 / 增加LP
     async function farmStake(number) {
-      //console.log(tokenInfo);
-      // emit("charge", tokenInfo);
-      // LPOperation(props.tokenInfo.pendingReward, 2);
       try {
         const addressInfo = store.state.addressInfo;
         const {
@@ -242,30 +213,68 @@ export default defineComponent({
       }
     }
 
-    function handleLP(type) {
+    async function handleLP(type) {
       if (type === "add") {
         dialogAddOrMinus.value = true;
         addOrMinus.value = "add";
+        getBalance();
       } else {
         dialogAddOrMinus.value = true;
         addOrMinus.value = "minus";
+        balance.value = props.tokenInfo.stakeAmount;
       }
     }
 
-    function clickMax() {
-      numberValue.value = props.tokenInfo.stakeAmount;
+    async function getBalance() {
+      balance.value = "";
+      const addressInfo = store.state.addressInfo;
+      if (props.isTalon) {
+        const { stakeTokenChainId, stakeTokenAssetId, stakeTokenDecimals } =
+          props.tokenInfo;
+        const res = await getAssetBalance(
+          stakeTokenChainId,
+          stakeTokenAssetId,
+          addressInfo.address.Talon
+        );
+        balance.value = divisionDecimals(res.balance, stakeTokenDecimals);
+      } else {
+        const transfer = new ETransfer();
+        const contractAddress = props.tokenInfo.lpToken;
+        const address = addressInfo.address.Ethereum;
+        if (contractAddress) {
+          const decimal = props.tokenInfo.stakeTokenDecimals;
+          const res = await transfer.getERC20Balance(
+            contractAddress,
+            Number(decimal),
+            address
+          );
+          // console.log(res);
+          balance.value = res;
+        } else {
+          const res = await transfer.getEthBalance(address);
+          balance.value = res;
+        }
+      }
     }
-    async function confirmAddOrMinus() {
+
+    async function confirmAddOrMinus(amount) {
       if (addOrMinus.value === "add") {
         loading.value = true;
-        await farmStake(numberValue.value);
+        if (props.isTalon) {
+          await farmStake(amount);
+        } else {
+          await LPOperation(0, amount);
+        }
         loading.value = false;
       } else {
         // farmWithdraw
         loading.value = true;
-        await farmWithdrawal(numberValue.value);
+        if (props.isTalon) {
+          await farmWithdrawal(amount);
+        } else {
+          await LPOperation(1, amount);
+        }
         loading.value = false;
-        // LPOperation(numberValue.value, 1);
       }
     }
 
@@ -300,7 +309,40 @@ export default defineComponent({
     }
 
     // 添加 - 0、减少 - 1 lp, 领取收益 -2
-    function LPOperation(number, type) {}
+    async function LPOperation(type, value) {
+      try {
+        const transfer = new ETransfer();
+        const { stakeTokenDecimals } = props.tokenInfo;
+        const wallet = transfer.provider.getSigner();
+        const contracts = new ethers.Contract(contractAddress, txAbi, wallet);
+        let res;
+        const amount = timesDecimals(value, stakeTokenDecimals);
+        // console.log(amount, 9595);
+        const pid = props.tokenInfo.farmHash;
+        if (type === 0) {
+          // console.log(props.tokenInfo.farmHash, 999888)
+          res = await contracts.deposit(pid, amount);
+        } else if (type === 1) {
+          res = await contracts.withdraw(pid, amount);
+        } else {
+          res = await contracts.deposit(pid, amount);
+        }
+        if (res.hash) {
+          ElMessage({
+            message: t("transfer.transfer14"),
+            type: "success"
+          });
+          dialogAddOrMinus.value = false;
+        } else {
+          ElMessage({ message: res.msg, type: "warning" });
+        }
+      } catch (e) {
+        ElMessage({
+          message: e.message || e,
+          type: "warning"
+        });
+      }
+    }
 
     async function handleHex(hex) {
       const tAssemble = nerve.deserializationTx(hex);
@@ -332,11 +374,10 @@ export default defineComponent({
       authToken,
       dialogAddOrMinus,
       addOrMinus,
-      numberValue,
       loading,
+      balance,
       gether,
       handleLP,
-      clickMax,
       confirmAddOrMinus
     };
   }
@@ -360,6 +401,7 @@ export default defineComponent({
       color: #4a5ef2;
       line-height: 24px;
       margin-top: 8px;
+      cursor: not-allowed;
       &:first-child {
         margin: 0;
       }
@@ -417,82 +459,6 @@ export default defineComponent({
   }
   .el-overlay {
     z-index: 1888 !important;
-  }
-}
-.add-minus-dialog {
-  border-radius: 10px;
-  .el-dialog__header {
-    padding: 0;
-  }
-  .el-dialog__body {
-    .titles {
-      font-size: 24px;
-      font-weight: 600;
-      line-height: 36px;
-      text-align: center;
-      margin: 0 0 20px 20px;
-    }
-    .infos {
-      width: 417px;
-      height: 94px;
-      padding: 15px 20px;
-      background: #ffffff;
-      border: 1px solid #e3eeff;
-      border-radius: 15px;
-      .in {
-        font-size: 14px;
-        font-weight: 500;
-        color: #7e87c2;
-        margin-bottom: 4px;
-      }
-      .to {
-        display: flex;
-        align-items: center;
-        .el-input {
-          flex: 1;
-          .el-input__inner {
-            font-size: 20px;
-            /* border: transparent;
-            height: 30px;
-            line-height: 30px; */
-          }
-        }
-        .el-input-group__append,
-        .el-input-group__prepend {
-          background-color: transparent;
-          border: none;
-          padding-right: 0;
-          span {
-            display: inline-block;
-            padding: 3px 6px;
-            color: #4b7cf7;
-            background-color: #e4e7ff;
-            cursor: pointer;
-            border-radius: 5px;
-          }
-        }
-        .lp {
-          min-width: 100px;
-          font-size: 14px;
-          font-weight: 600;
-          text-align: right;
-        }
-      }
-    }
-  }
-
-  .dialog-footer {
-    padding: 40px 0 30px 0;
-    .el-button {
-      width: 185px;
-      height: 48px;
-      background: #ffffff;
-      border: 1px solid #4a5ef2;
-    }
-    .el-button--primary {
-      background: #4a5ef2;
-      margin-left: 20px;
-    }
   }
 }
 </style>

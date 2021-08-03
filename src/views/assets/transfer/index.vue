@@ -4,7 +4,7 @@
       <div class="back"><i class="iconfont icon-fanhui" @click="back"></i></div>
       <div class="tab-wrap">
         <el-tabs v-model="activeName" @tab-click="handleClick">
-          <el-tab-pane name="first">
+          <el-tab-pane name="first" :disabled="father.disableTx">
             <template #label>
               <span>
                 <i class="iconfont icon-chongzhi"></i>
@@ -20,7 +20,7 @@
               </span>
             </template>
           </el-tab-pane>
-          <el-tab-pane name="third">
+          <el-tab-pane name="third" :disabled="father.disableTx">
             <template #label>
               <span>
                 <i class="iconfont icon-tixian"></i>
@@ -60,6 +60,7 @@ export default defineComponent({
     CommonTransfer,
     Withdrawal
   },
+  inject: ["father"],
   props: {
     showTransfer: Boolean,
     currentTab: String,

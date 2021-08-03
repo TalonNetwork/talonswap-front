@@ -84,6 +84,12 @@ export default defineComponent({
           this.amountErrorTip = "";
         }
       }
+    },
+    "father.allAssetsList": {
+      deep: true,
+      handler() {
+        this.selectAsset(this.father.transferAsset);
+      }
     }
   },
   computed: {

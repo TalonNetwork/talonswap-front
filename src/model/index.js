@@ -70,3 +70,18 @@ export async function uniAssetPrice(symbol) {
   });
   return res;
 }
+
+export async function getAssetBalance(chainId, assetId, address) {
+  const channel = "getAccountBalance";
+  const params = createRPCParams(channel);
+  params.params = params.params.concat([chainId, assetId, address]);
+  const res = await listen({
+    url,
+    channel,
+    params: {
+      cmd: true,
+      channel: "psrpc:" + JSON.stringify(params)
+    }
+  });
+  return res;
+}

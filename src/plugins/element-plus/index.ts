@@ -83,6 +83,7 @@ import {
   ElMessage,
   ElMessageBox,
   ElNotification,
+  ElEmpty
 } from "element-plus/lib"; // 从lib引入 保持locale环境一直，使按需加载时vue-i18n能生效
 
 const components = [
@@ -164,6 +165,7 @@ const components = [
   ElTransfer,
   ElTree,
   ElUpload,
+  ElEmpty
 ];
 
 const plugins = [
