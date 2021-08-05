@@ -2,7 +2,7 @@
   <div class="farm-details">
     <div class="getLp">
       <p class="click">
-        {{ $t("farm.farm7") }}NULS-ETH LP
+        {{ $t("farm.farm7") }}{{ tokenInfo.name }}
         <i class=""></i>
       </p>
       <p class="click">
@@ -112,6 +112,9 @@ export default defineComponent({
     const loading = ref(false);
     const needAuth = ref(true);
     const refreshAuth = ref(false);
+    const addressInfo = computed(() => {
+      return store.state.addressInfo;
+    });
     // const balance = computed(() => {
 
     // })
@@ -124,11 +127,10 @@ export default defineComponent({
         needAuth.value = false;
       } else {
         const transfer = new ETransfer();
-        const addressInfo = store.state.addressInfo;
         needAuth.value = await transfer.getERC20Allowance(
           props.tokenInfo.lpToken,
           contractAddress,
-          addressInfo.address.Ethereum
+          addressInfo.value?.address?.Ethereum
         );
         if (!needAuth.value) {
           refreshAuth.value = false;
@@ -148,7 +150,7 @@ export default defineComponent({
         const res = await transfer.approveERC20(
           props.tokenInfo.lpToken,
           contractAddress,
-          store.state.addressInfo.address.Ethereum
+          addressInfo.value?.address?.Ethereum
         );
         handleMsg(res);
         refreshAuth.value = true;
@@ -186,7 +188,6 @@ export default defineComponent({
     // 收取收益 / 增加LP
     async function farmStake(number) {
       try {
-        const addressInfo = store.state.addressInfo;
         const {
           stakeTokenChainId,
           stakeTokenAssetId,
@@ -195,7 +196,7 @@ export default defineComponent({
         } = props.tokenInfo;
         const ammount = timesDecimals(number, stakeTokenDecimals);
         const tx = await nerve.swap.farmStake(
-          addressInfo.address.Talon,
+          addressInfo.value?.address?.Talon,
           nerve.swap.token(stakeTokenChainId, stakeTokenAssetId),
           config.chainId,
           config.prefix,
@@ -227,20 +228,19 @@ export default defineComponent({
 
     async function getBalance() {
       balance.value = "";
-      const addressInfo = store.state.addressInfo;
       if (props.isTalon) {
         const { stakeTokenChainId, stakeTokenAssetId, stakeTokenDecimals } =
           props.tokenInfo;
         const res = await getAssetBalance(
           stakeTokenChainId,
           stakeTokenAssetId,
-          addressInfo.address.Talon
+          addressInfo.value?.address?.Talon
         );
         balance.value = divisionDecimals(res.balance, stakeTokenDecimals);
       } else {
         const transfer = new ETransfer();
         const contractAddress = props.tokenInfo.lpToken;
-        const address = addressInfo.address.Ethereum;
+        const address = addressInfo.value?.address?.Ethereum;
         if (contractAddress) {
           const decimal = props.tokenInfo.stakeTokenDecimals;
           const res = await transfer.getERC20Balance(
@@ -281,7 +281,6 @@ export default defineComponent({
     // 退出质押
     async function farmWithdrawal(number) {
       try {
-        const addressInfo = store.state.addressInfo;
         const {
           stakeTokenChainId,
           stakeTokenAssetId,
@@ -290,7 +289,7 @@ export default defineComponent({
         } = props.tokenInfo;
         const ammount = timesDecimals(number, stakeTokenDecimals);
         const tx = await nerve.swap.farmWithdraw(
-          addressInfo.address.Talon,
+          addressInfo.value?.address?.Talon,
           nerve.swap.token(stakeTokenChainId, stakeTokenAssetId),
           // config.chainId,
           // config.prefix,
@@ -348,11 +347,10 @@ export default defineComponent({
       const tAssemble = nerve.deserializationTx(hex);
 
       const transfer = new NTransfer({ chain: "NERVE" });
-      const addressInfo = store.state.addressInfo;
       const txHex = await transfer.getTxHex({
         tAssemble,
-        pub: addressInfo.pub,
-        signAddress: addressInfo.address.Ethereum
+        pub: addressInfo.value?.pub,
+        signAddress: addressInfo.value?.address?.Ethereum
       });
       console.log(txHex, 666);
       const result = await transfer.broadcastHex(txHex);

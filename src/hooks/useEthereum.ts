@@ -1,6 +1,7 @@
 import { reactive, toRefs } from "vue";
 // import { Web3Provider } from "ethers";
 import MetaMask from "@/assets/img/metamask.svg";
+import CoinBase from "@/assets/img/coinbase.svg";
 import Nabox from "@/assets/img/nabox.svg";
 import OKEx from "@/assets/img/okexchain.png";
 
@@ -54,6 +55,7 @@ export default function useEthereum() {
     const provider = getProvider();
     provider?.on("accountsChanged", (accounts: string) => {
       console.log(accounts, "=======accountsChanged");
+      reload()
       if (accounts.length) {
         state.address = accounts[0];
       } else {
@@ -69,6 +71,7 @@ export default function useEthereum() {
       console.log(chainId, "=======chainId");
       if (chainId) {
         state.chainId = provider.chainId;
+        reload()
         // checkNetwork(chainId);
       }
     });
@@ -91,6 +94,11 @@ export default function useEthereum() {
   function disconnect() {
     localStorage.removeItem("providerType");
     state.address = "";
+    reload()
+  }
+
+  function reload() {
+    window.location.reload()
   }
 
   return {

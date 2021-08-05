@@ -79,7 +79,7 @@ export default defineComponent({
           );
           const pub = compressPub.slice(2);
           account.pub = pub;
-          account.selected = true;
+          // account.selected = true;
           const { chainId, assetId = 1, prefix } = config;
           account.address.Talon = nerve.getAddressByPub(
             chainId,
@@ -102,7 +102,7 @@ export default defineComponent({
           router.push(fromPath);
         }
       } catch (e) {
-        ElMessage.warning({
+        ElMessage({
           message: t("login.login3"),
           type: "warning"
         });

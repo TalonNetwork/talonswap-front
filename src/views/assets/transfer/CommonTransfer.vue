@@ -16,6 +16,7 @@
     <div class="transfer-content">
       <custom-input
         v-model:inputVal="amount"
+        :label="$t('transfer.transfer19')"
         :icon="transferAsset.symbol"
         :assetList="assetsList"
         :balance="balance"
@@ -131,7 +132,7 @@ export default defineComponent({
           assetsChainId: chainId,
           assetsId: assetId,
           amount: timesDecimals(this.amount, decimals),
-          fee: ""
+          fee: 0
         };
 
         console.log(transferInfo);

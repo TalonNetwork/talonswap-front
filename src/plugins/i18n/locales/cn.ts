@@ -67,6 +67,8 @@ const cn = {
     transfer16: "地址错误",
     transfer17: "金额必须为数字并且小数点后最多位数为",
     transfer18: "手续费不足",
+    transfer19: "转账金额",
+    transfer20: "提现金额",
   },
   trading: {
     trading1: "订单历史",
@@ -139,8 +141,8 @@ const cn = {
     createFarm9: "请输入数字并且小数点后最多位数为",
   },
   farmRankType: {
-    1: "按照收益排名",
-    2: "按照流动性排名"
+    apr: "按照收益排名",
+    usd: "按照流动性排名"
   }
 };
 

@@ -13,12 +13,13 @@
         text-color="#fff"
         active-text-color="#fff"
       >
-        <!-- <el-menu-item index="trading">{{ $t("header.header1") }}</el-menu-item> -->
-        <!-- <el-menu-item index="liquidity">
+        <!-- <el-menu-item index="trading">{{ $t("header.header1") }}</el-menu-item>
+        <el-menu-item index="liquidity">
           {{ $t("header.header2") }}
         </el-menu-item> -->
         <el-menu-item index="farm">Farm</el-menu-item>
         <!-- <el-menu-item index="info">Info</el-menu-item> -->
+        <!-- <el-menu-item index="test">Test</el-menu-item> -->
       </el-menu>
     </div>
     <div class="account-wrap">
@@ -38,6 +39,7 @@
           {{ superLong(address, 4) }}
         </div>
       </div>
+      <div class="language" @click="switchLang">{{ lang }}</div>
     </div>
     <el-dialog
       title="Connect to a wallet"
@@ -97,6 +99,7 @@ import {
 } from "vue";
 import { superLong, getCurrentAccount } from "@/api/util";
 import useEthereum, { providerList } from "@/hooks/useEthereum";
+import useLang from "@/hooks/useLang";
 import { useRouter, useRoute } from "vue-router";
 import { useStore } from "vuex";
 
@@ -170,6 +173,7 @@ export default defineComponent({
         name: "assets"
       });
     }
+    const { lang, switchLang } = useLang();
     return {
       address,
       showConnect,
@@ -179,7 +183,9 @@ export default defineComponent({
       disconnectProvider,
       manageAccount,
       activeIndex,
-      toAsset
+      toAsset,
+      lang,
+      switchLang
     };
   },
   data() {
@@ -276,6 +282,14 @@ export default defineComponent({
     color: #4a5ef2;
     line-height: 36px;
     text-align: center;
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+  .language {
+    margin-left: 20px;
+    color: #fff;
+    cursor: pointer;
     &:hover {
       opacity: 0.7;
     }

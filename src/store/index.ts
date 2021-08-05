@@ -42,7 +42,7 @@ export default createStore<State>({
       })
     },
     currentAddress(state) {
-      const address = state.addressInfo.address?.Ethereum;
+      const address = state.addressInfo?.address?.Ethereum;
       return address
     }
   },

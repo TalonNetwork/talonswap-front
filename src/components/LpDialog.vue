@@ -103,9 +103,11 @@ export default defineComponent({
 
     function closeAddOrMinus() {
       emit("update:showLPDialog", false);
+      numberValue.value = "";
     }
     function confirmAddOrMinus() {
       emit("confirm", numberValue.value);
+      numberValue.value = "";
     }
     return {
       show,

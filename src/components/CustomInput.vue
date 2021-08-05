@@ -1,7 +1,7 @@
 <template>
   <div class="custom-input">
     <div class="info flex-between">
-      <span>{{ $t("public.public11") }}</span>
+      <span>{{ label }}</span>
       <span>{{ $t("public.public12") }}{{ balance }}</span>
     </div>
     <div class="inner flex-between">
@@ -62,6 +62,10 @@
 import SymbolIcon from "@/components/SymbolIcon.vue";
 export default {
   props: {
+    label: {
+      type: String,
+      default: ""
+    },
     icon: String,
     assetList: {
       type: Array,

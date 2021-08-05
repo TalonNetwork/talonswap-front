@@ -84,8 +84,8 @@ export default defineComponent({
     const current = ref(1);
     const state = reactive({
       sortList: [
-        { value: "1", label: t("farmRankType.1") },
-        { value: "2", label: t("farmRankType.2") }
+        { value: "1", label: t("farmRankType.apr") },
+        { value: "2", label: t("farmRankType.usd") }
       ],
       sortValue: "1",
       mortgageValue: false

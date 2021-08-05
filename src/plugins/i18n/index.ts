@@ -24,7 +24,7 @@ const lang = localStorage.getItem("lang") || enLocale.name;
 localStorage.setItem("lang", lang);
 
 const i18n = createI18n({
-  locale: "zh-cn", //lang, // 默认
+  locale: lang, // 默认
   fallbackLocale: fallLang, // 没有默认语言时重置为fallLang
   messages,
 });

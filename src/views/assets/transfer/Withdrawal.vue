@@ -22,6 +22,7 @@
     <div class="transfer-content">
       <custom-input
         v-model:inputVal="amount"
+        :label="$t('transfer.transfer20')"
         :icon="transferAsset.symbol"
         :assetList="assetsList"
         :balance="balance"

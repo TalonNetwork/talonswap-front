@@ -55,6 +55,7 @@ interface UserStakeFarm {
   stakedTokenAmount: number;
   pendingReward: number;
   pendingRewardUSD: number;
+  stakedTokenAmountUSD: number;
 }
 
 interface Data {
@@ -115,8 +116,10 @@ export default function useData() {
           data.map((item: UserStakeFarm) => {
             totalList.map(v => {
               if (v.farmHash === item.farmHash) {
+                v.apr = item.apr;
                 v.stakeAmount = item.stakedTokenAmount;
-                v.stakeUSD = item.tatalStakeTokenUSD;
+                v.stakeUSD = item.stakedTokenAmountUSD;
+                v.tatalStakeTokenUSD = item.tatalStakeTokenUSD;
                 v.pendingRewardUSD = item.pendingRewardUSD;
                 v.pendingReward = item.pendingReward;
               }
