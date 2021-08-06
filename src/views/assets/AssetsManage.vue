@@ -137,7 +137,7 @@ export default {
       });
       localStorage.setItem("accountList", JSON.stringify(accountList));
 
-      this.$store.commit("setAddressInfo", currentAccount);
+      this.$store.commit("setCurrentAddress", currentAccount);
       this.$emit("addAssets");
       this.close();
     }

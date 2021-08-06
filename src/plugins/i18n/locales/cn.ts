@@ -137,8 +137,10 @@ const cn = {
     createFarm5: "请设置奖励Token总量",
     createFarm6: "请设置开始时间",
     createFarm7: "请阅读并勾选复选框",
-    createFarm8: "请输入数字",
+    // createFarm8: "请输入数字并且小数点后最多位数为",
     createFarm9: "请输入数字并且小数点后最多位数为",
+    createFarm10: "当前账户可用余额不足",
+    createFarm11: "请输入数字",
   },
   farmRankType: {
     apr: "按照收益排名",

@@ -106,8 +106,8 @@ export default defineComponent({
   },
   mounted() {
     this.assetsList = [...this.father.allAssetsList];
-    console.log(this.father, "===commontransfer===");
-    console.log(this.$store.state.addressInfo, "===addressInfo===");
+    // console.log(this.father, "===commontransfer===");
+    // console.log(this.$store.state.addressInfo, "===addressInfo===");
     this.selectAsset(this.father.transferAsset);
     this.transfer = new NTransfer({
       chain: "NERVE",
@@ -153,6 +153,7 @@ export default defineComponent({
         const result = await this.transfer.broadcastHex(txHex);
         if (result && result.hash) {
           this.amount = "";
+          this.toAddress = "";
           this.$message({
             message: this.$t("transfer.transfer14"),
             type: "success"

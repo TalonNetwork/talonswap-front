@@ -7,6 +7,7 @@ const url = config.WS_URL;
 //广播hex
 export async function broadcastHex(txHex) {
   const channel = "broadcastTx";
+  // const channel = "validateTx";
   const params = createRPCParams(channel);
   params.params = params.params.concat([txHex]);
   const res = await listen({
@@ -17,6 +18,7 @@ export async function broadcastHex(txHex) {
       channel: "psrpc:" + JSON.stringify(params)
     }
   });
+  // console.log(res, 999)
   return res;
 }
 

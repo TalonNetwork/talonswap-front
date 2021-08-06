@@ -152,7 +152,7 @@ export default defineComponent({
           message: t("createFarm.createFarm4"),
           trigger: "change"
         },
-        { validator: validateSyrupPerDay, trigger: "blur" }
+        { validator: validateSyrupTotalAmount, trigger: "blur" }
       ],
       syrupTotalAmount: [
         {
@@ -178,7 +178,8 @@ export default defineComponent({
       return tokenB.available;
     });
     function validateSyrupPerDay(rule, value, callback) {
-      const reg = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d])?$");
+      // const reg = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d])?$");
+      const reg = new RegExp("^([1-9][\\d]{0,1})$");
       if (!reg.exec(value)) {
         callback(t("createFarm.createFarm8"));
       } else {
@@ -187,9 +188,9 @@ export default defineComponent({
     }
     function validateSyrupTotalAmount(rule, value, callback) {
       if (!model.tokenB) {
-        const reg = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d])?$");
+        const reg = new RegExp("^([1-9][\\d]*|0)(\\.[\\d]*)?$");
         if (!reg.exec(value)) {
-          callback(t("createFarm.createFarm8"));
+          callback(t("createFarm.createFarm11"));
         } else {
           callback();
         }
@@ -199,11 +200,11 @@ export default defineComponent({
         const reg = new RegExp(
           "^([1-9][\\d]{0,20}|0)(\\.[\\d]{0," + decimals + "})?$"
         );
-        console.log(available, value, available < value);
-        if (!reg.exec(value)) {
-          callback(t("createFarm.createFarm9"));
-        } else if (Minus(available, value) < 0) {
-          callback(t("transfer.transfer15"));
+        // console.log(available, value, available < value);
+        if (Minus(available, value) < 0) {
+          callback(t("createFarm.createFarm10"));
+        } else if (!reg.exec(value)) {
+          callback(t("createFarm.createFarm9") + decimals);
         } else {
           callback();
         }

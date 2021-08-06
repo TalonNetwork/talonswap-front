@@ -88,15 +88,7 @@
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  reactive,
-  toRefs,
-  ref,
-  watch,
-  computed,
-  onMounted
-} from "vue";
+import { defineComponent, ref, watch, computed } from "vue";
 import { superLong, getCurrentAccount } from "@/api/util";
 import useEthereum, { providerList } from "@/hooks/useEthereum";
 import useLang from "@/hooks/useLang";

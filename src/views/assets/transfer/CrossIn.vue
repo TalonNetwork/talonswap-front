@@ -89,7 +89,7 @@ export default defineComponent({
         }
       }
     },
-    "father.allAssetsList": {
+    "father.crossInOutSymbol": {
       deep: true,
       handler() {
         console.log(99999);
@@ -137,7 +137,7 @@ export default defineComponent({
       // console.log(123465,this.father);
       const chain = _networkInfo[this.father.network];
       if (this.father.disableTx || !chain) return;
-      this.assetsList = this.father.allAssetsList.filter(v => {
+      this.assetsList = this.father.crossInOutSymbol.filter(v => {
         return v.heterogeneousList?.filter(item => {
           return item.heterogeneousChainId === chain.chainId;
         });

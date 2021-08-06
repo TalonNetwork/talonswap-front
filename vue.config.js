@@ -51,7 +51,7 @@ module.exports = {
         }
       },
       "/test": {
-        target: "http://xm_mp_api.zhoulijun.top/api",
+        target: "http://xm_mp_dev.zhoulijun.top/api",
         changeOrigin: true,
         pathRewrite: {
           "^/test": ""

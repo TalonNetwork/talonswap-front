@@ -63,7 +63,7 @@
           <el-button
             @click="transfer(scope.row, 'crossIn')"
             type="text"
-            v-if="isShowCrossHandle(scope.row.source)"
+            v-if="isShowCrossHandle(scope.row)"
             :disabled="disableTx"
           >
             {{ $t("assets.assets4") }}
@@ -75,7 +75,7 @@
             @click="transfer(scope.row, 'withdrawal')"
             type="text"
             :disabled="disableTx"
-            v-if="isShowCrossHandle(scope.row.source)"
+            v-if="isShowCrossHandle(scope.row)"
           >
             {{ $t("assets.assets6") }}
           </el-button>
@@ -178,8 +178,9 @@ export default defineComponent({
     return {
       loading: true,
       showAssetManage: false,
-      selectAssets: [],
-      allAssetsList: [],
+      selectAssets: [], // 勾选显示的资产
+      allAssetsList: [], // L2 所有资产
+      crossInOutSymbol: [], // 支持Ethereum转入/转出的资产
       showTransfer: false,
       currentTab: "first",
       tableData: [],
@@ -203,7 +204,7 @@ export default defineComponent({
         }
       });
       this.loading = false;
-      const data = res.filter(item => {
+      res.map(item => {
         const decimal = item.decimals;
         item.number = divisionAndFix(item.totalBalanceStr, decimal);
         item.locking = divisionAndFix(
@@ -212,8 +213,16 @@ export default defineComponent({
         );
         item.available = divisionAndFix(item.balanceStr, decimal);
         item.valuation = Times(item.number, item.usdPrice).toFixed(2);
+      });
+      const sortDataByValue = [...res].sort((a, b) => {
+        return a.valuation - b.valuation > 0 ? -1 : 1;
+      });
+      const sortDataBySymbol = [...res].sort((a, b) => {
+        return a.symbol > b.symbol ? 1 : -1;
+      });
+      const crossInOutSymbol = [...sortDataBySymbol].filter(item => {
         if (!item.heterogeneousList) {
-          return true;
+          return false;
         } else {
           let supportedChain = false;
           item.heterogeneousList.map(v => {
@@ -226,14 +235,9 @@ export default defineComponent({
           return supportedChain;
         }
       });
-      const sortDataByValue = [...data].sort((a, b) => {
-        return a.valuation - b.valuation > 0 ? -1 : 1;
-      });
-      const sortDataBySymbol = [...data].sort((a, b) => {
-        return a.symbol > b.symbol ? 1 : -1;
-      });
       this.sortDataByValue = sortDataByValue;
       this.allAssetsList = sortDataBySymbol;
+      this.crossInOutSymbol = crossInOutSymbol;
       this.filterAssets();
     },
     //过滤展示资产列表
@@ -273,9 +277,17 @@ export default defineComponent({
       this.transferAsset = asset;
       // console.log(this.transferAsset,55)
     },
-    isShowCrossHandle(status) {
-      const showArr = [4, 5, 6, 7, 8, 9];
-      return showArr.indexOf(status) > -1;
+    isShowCrossHandle(item) {
+      if (!item.heterogeneousList) return false;
+      let supportedChain = false;
+      item.heterogeneousList.map(v => {
+        Object.keys(_networkInfo).map(key => {
+          if (_networkInfo[key].chainId === v.heterogeneousChainId) {
+            supportedChain = true;
+          }
+        });
+      });
+      return supportedChain;
     }
   }
 });

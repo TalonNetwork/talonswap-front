@@ -1,6 +1,6 @@
 <template>
   <div class="farm-item-symbol">
-    <div class="mult-img-wrap" v-if="symbols > 1">
+    <div class="mult-img-wrap" v-if="symbols.length > 1">
       <symbol-icon :icon="symbols[0]"></symbol-icon>
       <symbol-icon :icon="symbols[1]"></symbol-icon>
     </div>
