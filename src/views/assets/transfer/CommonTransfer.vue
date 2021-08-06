@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent } from "vue";
 import CustomInput from "@/components/CustomInput.vue";
 import { Minus, timesDecimals } from "@/api/util";
 import { NTransfer } from "@/api/api";

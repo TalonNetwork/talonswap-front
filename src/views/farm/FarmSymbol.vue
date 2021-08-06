@@ -25,7 +25,7 @@ export default defineComponent({
     const symbols = computed(() => props.name?.split("-"));
     return {
       symbols
-    }
+    };
   }
 });
 </script>

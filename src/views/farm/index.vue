@@ -65,7 +65,8 @@ import {
   onMounted,
   ref,
   onUnmounted,
-  watch
+  watch,
+  computed
 } from "vue";
 import FarmItem from "./FarmItem.vue";
 import useFarmData from "@/hooks/farm/useData";
@@ -81,14 +82,15 @@ export default defineComponent({
     const { t } = useI18n();
     const uniLoading = ref(true);
     const talonLoading = ref(true);
-    const current = ref(1);
+    const current = ref(1); // uniFarm -1 / talonFarm -2
+    // 下拉框
+    const sortList = computed(() => [
+      { value: "1", label: t("farmRankType.apr") },
+      { value: "2", label: t("farmRankType.usd") }
+    ])
     const state = reactive({
-      sortList: [
-        { value: "1", label: t("farmRankType.apr") },
-        { value: "2", label: t("farmRankType.usd") }
-      ],
-      sortValue: "1",
-      mortgageValue: false
+      sortValue: "1", // 下拉框值
+      mortgageValue: false // 只看已质押
     });
     const {
       talonList,
@@ -135,6 +137,7 @@ export default defineComponent({
       current,
       uniLoading,
       talonLoading,
+      sortList,
       ...toRefs(state),
       talonList,
       uniList,

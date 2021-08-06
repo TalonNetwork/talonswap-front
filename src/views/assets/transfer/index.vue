@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import { defineComponent, ref, watch, computed } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import CrossIn from "./CrossIn.vue";
 import CommonTransfer from "./CommonTransfer.vue";
 import Withdrawal from "./Withdrawal.vue";

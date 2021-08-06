@@ -19,7 +19,7 @@ setTimeout(() => { // 不延迟有时刷新会拿不到ethereum.selectedAddress?
     methods: {
       $copy(str:string) {
         copys(str);
-        this.$message.warning({
+        this.$message({
           message: this.$t("public.public13"),
           type: "success"
         });

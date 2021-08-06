@@ -1,4 +1,4 @@
-import { listen, unListen } from "@/api/promiseSocket";
+import { listen } from "@/api/promiseSocket";
 import { createRPCParams } from "@/api/util";
 import config from "@/config";
 
@@ -73,10 +73,15 @@ export async function uniAssetPrice(symbol) {
   return res;
 }
 
+// 查询资产详情
 export async function getAssetBalance(chainId, assetId, address) {
   const channel = "getAccountBalance";
   const params = createRPCParams(channel);
-  params.params = params.params.concat([chainId, assetId, address]);
+  params.params = params.params.concat([
+    Number(chainId),
+    Number(assetId),
+    address
+  ]);
   const res = await listen({
     url,
     channel,

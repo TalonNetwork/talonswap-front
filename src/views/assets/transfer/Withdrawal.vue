@@ -11,7 +11,7 @@
         father.network +
         $t("transfer.transfer8")
       }}
-      <span>
+      <span class="click" @click="openUrl(father.address, father.network)">
         {{ superLong(father.address) }}
         <i class="iconfont icon-tiaozhuanlianjie"></i>
       </span>
@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent } from "vue";
 import CustomInput from "@/components/CustomInput.vue";
 import {
   superLong,
@@ -257,6 +257,10 @@ export default defineComponent({
     },
     superLong(str, len = 6) {
       return superLong(str, len);
+    },
+    openUrl(address, network) {
+      const { origin } = _networkInfo[network];
+      window.open(origin + "/address/" + address);
     }
   }
 });

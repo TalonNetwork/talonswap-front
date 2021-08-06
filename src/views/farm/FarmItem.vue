@@ -30,9 +30,7 @@
           <div class="link view" @click="showId(item.farmHash)">
             {{ $t("farm.farm6") }}
             <i
-              :class="
-                item.showId ? 'el-icon-arrow-down' : 'el-icon-arrow-right'
-              "
+              :class="{ 'el-icon-arrow-right': true, expand: item.showDetail }"
             ></i>
           </div>
         </div>
@@ -59,7 +57,6 @@ import CollapseTransition from "@/components/CollapseTransition.vue";
 import FarmSymbol from "./FarmSymbol.vue";
 import nerve from "nerve-sdk-js";
 import config from "@/config";
-import { useStore } from "vuex";
 import { useRouter } from "vue-router";
 nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 
@@ -75,18 +72,13 @@ export default defineComponent({
     const state = reactive({
       contractAddress: "0x0faee22173db311f4c57c81ec6867e5deef6c218" //合约地址
     });
-    const store = useStore();
-    async function init() {
-      // state.tokenList = await getTokenList(state.contractAddress);
-      //console.log(this.tokenList);
-    }
 
     async function createFarm() {
       router.push("/create-farm");
     }
 
     //详情
-    function showId(hash, pid) {
+    function showId(hash) {
       for (let item of props.list) {
         if (item.farmHash === hash) {
           item.showDetail = !item.showDetail;
@@ -166,6 +158,12 @@ export default defineComponent({
     width: 100%;
     text-align: center;
     bottom: 20px;
+  }
+  .el-icon-arrow-right {
+    &.expand {
+      transform: rotate(90deg);
+    }
+    transition: transform 0.1s ease;
   }
 }
 </style>

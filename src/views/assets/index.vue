@@ -129,7 +129,7 @@ import SymbolIcon from "@/components/SymbolIcon.vue";
 import AssetsManage from "./AssetsManage.vue";
 import Transfer from "./transfer/index.vue";
 import config from "@/config";
-import { listen, unListen } from "@/api/promiseSocket";
+import { listen } from "@/api/promiseSocket";
 const url = config.WS_URL;
 
 export default defineComponent({

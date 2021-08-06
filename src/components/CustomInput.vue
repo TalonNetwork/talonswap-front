@@ -158,8 +158,6 @@ export default {
   }
   .el-input {
     margin-right: 20px;
-    .el-input-group__append {
-    }
   }
   .inner {
     :deep(.el-input) {

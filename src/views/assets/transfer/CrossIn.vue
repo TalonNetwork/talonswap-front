@@ -11,7 +11,7 @@
         father.network +
         $t("transfer.transfer5")
       }}
-      <span>
+      <span class="click" @click="openUrl(father.address, father.network)">
         {{ superLong(father.address) }}
         <i class="iconfont icon-tiaozhuanlianjie"></i>
       </span>
@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import { defineComponent, ref } from "vue";
+import { defineComponent } from "vue";
 import CustomInput from "@/components/CustomInput.vue";
 import { superLong, _networkInfo, Minus } from "@/api/util";
 import { ETransfer } from "@/api/api";
@@ -234,11 +234,13 @@ export default defineComponent({
           this.father.address
         );
         this.handleMsg(res);
-        this.refreshAuth = true;
-        this.getERC20Allowance();
+        if (res.hash) {
+          this.refreshAuth = true;
+          this.getERC20Allowance();
+        }
       } catch (e) {
         this.$message({
-          message: e,
+          message: e.message || e,
           type: "warning"
         });
       }
@@ -271,15 +273,19 @@ export default defineComponent({
     },
     handleMsg(data) {
       // console.log(data, 555);
-      if (data.success) {
+      if (data.hash) {
         this.amount = "";
         this.$message({
           message: this.$t("transfer.transfer14"),
           type: "success"
         });
       } else {
-        this.$message({ message: data.msg, type: "warning" });
+        this.$message({ message: data.message || data, type: "warning" });
       }
+    },
+    openUrl(address, network) {
+      const { origin } = _networkInfo[network];
+      window.open(origin + "/address/" + address);
     }
   }
 });

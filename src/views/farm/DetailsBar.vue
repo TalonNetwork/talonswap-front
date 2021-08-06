@@ -143,6 +143,7 @@ export default defineComponent({
       }
     }
 
+    // 授权token
     async function authToken() {
       emit("loading", true);
       try {
@@ -152,28 +153,23 @@ export default defineComponent({
           contractAddress,
           addressInfo.value?.address?.Ethereum
         );
-        handleMsg(res);
-        refreshAuth.value = true;
-        getERC20Allowance();
+        if (res.hash) {
+          ElMessage.success({
+            message: t("transfer.transfer14"),
+            type: "success"
+          });
+          refreshAuth.value = true;
+          getERC20Allowance();
+        } else {
+          ElMessage.warning({ message: res.message || res, type: "warning" });
+        }
       } catch (e) {
         ElMessage.warning({
-          message: e,
+          message: e.message || e,
           type: "warning"
         });
       }
       emit("loading", false);
-    }
-
-    function handleMsg(data) {
-      // console.log(data, 555);
-      if (data.success) {
-        ElMessage.success({
-          message: t("transfer.transfer14"),
-          type: "success"
-        });
-      } else {
-        ElMessage.warning({ message: data.msg, type: "warning" });
-      }
     }
 
     async function gether() {
@@ -185,7 +181,8 @@ export default defineComponent({
       }
       emit("loading", false);
     }
-    // 收取收益 / 增加LP
+
+    // 收取收益(number = 0) / 增加LP
     async function farmStake(number) {
       try {
         const {
@@ -214,7 +211,9 @@ export default defineComponent({
       }
     }
 
+    // 添加/退出lp弹窗
     async function handleLP(type) {
+      console.log(type, 9966333, props.tokenInfo)
       if (type === "add") {
         dialogAddOrMinus.value = true;
         addOrMinus.value = "add";
@@ -257,6 +256,7 @@ export default defineComponent({
       }
     }
 
+    // 添加 / 退出farm
     async function confirmAddOrMinus(amount) {
       if (addOrMinus.value === "add") {
         loading.value = true;
@@ -333,7 +333,7 @@ export default defineComponent({
           });
           dialogAddOrMinus.value = false;
         } else {
-          ElMessage({ message: res.msg, type: "warning" });
+          ElMessage({ message: res.message || res, type: "warning" });
         }
       } catch (e) {
         ElMessage({
@@ -343,6 +343,7 @@ export default defineComponent({
       }
     }
 
+    // talon 签名hash&广播hex
     async function handleHex(hex) {
       const tAssemble = nerve.deserializationTx(hex);
 

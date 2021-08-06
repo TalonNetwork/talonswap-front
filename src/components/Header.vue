@@ -70,7 +70,7 @@
         <div class="top">
           <span>{{ superLong(address, 9) }}</span>
           <span><i class="iconfont icon-fuzhi"></i></span>
-          <span>
+          <span @click="openUrl">
             <i
               class="iconfont icon-tiaozhuanlianjie"
               style="font-size: 29px"
@@ -89,7 +89,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, watch, computed } from "vue";
-import { superLong, getCurrentAccount } from "@/api/util";
+import { superLong, getCurrentAccount, _networkInfo } from "@/api/util";
 import useEthereum, { providerList } from "@/hooks/useEthereum";
 import useLang from "@/hooks/useLang";
 import { useRouter, useRoute } from "vue-router";
@@ -166,6 +166,11 @@ export default defineComponent({
       });
     }
     const { lang, switchLang } = useLang();
+    function openUrl() {
+      const network = store.getters.chain;
+      const { origin } = _networkInfo[network];
+      window.open(origin + "/address/" + address.value);
+    }
     return {
       address,
       showConnect,
@@ -177,7 +182,8 @@ export default defineComponent({
       activeIndex,
       toAsset,
       lang,
-      switchLang
+      switchLang,
+      openUrl
     };
   },
   data() {
