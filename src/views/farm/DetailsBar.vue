@@ -20,7 +20,13 @@
           <span>≈${{ tokenInfo.pendingRewardUSD }}</span>
         </div>
         <div class="right">
-          <el-button class="btns" type="primary" size="small" @click="gether">
+          <el-button
+            class="btns"
+            type="primary"
+            size="small"
+            @click="gether"
+            :disabled="!Number(tokenInfo.pendingRewardUSD)"
+          >
             {{ $t("farm.farm21") }}
           </el-button>
         </div>
@@ -48,6 +54,7 @@
               type="primary"
               size="small"
               icon="el-icon-minus"
+              :disabled="!Number(tokenInfo.stakeAmount)"
               @click="handleLP('minus')"
             ></el-button>
             <el-button
@@ -55,6 +62,7 @@
               type="primary"
               size="small"
               icon="el-icon-plus"
+              :disabled="!Number(tokenInfo.syrupTokenBalance)"
               @click="handleLP('add')"
             ></el-button>
           </template>
@@ -213,7 +221,7 @@ export default defineComponent({
 
     // 添加/退出lp弹窗
     async function handleLP(type) {
-      console.log(type, 9966333, props.tokenInfo)
+      console.log(type, 9966333, props.tokenInfo);
       if (type === "add") {
         dialogAddOrMinus.value = true;
         addOrMinus.value = "add";

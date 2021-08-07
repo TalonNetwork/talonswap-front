@@ -128,9 +128,9 @@ export default {
     send() {
       // this.val
       const content = {
-        type: "task", // message(普通消息类型) | task(任务邀请) | reward(报酬单)
+        type: "task", // message(普通消息类型) | task(任务邀请，附带id) | reward(报酬单) | newChat(发起沟通，一般附带id)
         message: "",
-        id: "44"
+        taskId: "44"
       }
       const params = {
         content: JSON.stringify(content),

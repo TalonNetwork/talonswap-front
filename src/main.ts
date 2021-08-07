@@ -13,8 +13,8 @@ setTimeout(() => { // 不延迟有时刷新会拿不到ethereum.selectedAddress?
   createApp(App)
   .use(router)
   .use(store)
-  .use(useI18n)
   .use(useElementPlus)
+  .use(useI18n)
   .mixin({
     methods: {
       $copy(str:string) {

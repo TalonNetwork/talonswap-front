@@ -260,7 +260,7 @@ export default function useData() {
         // 待领取收益数量-usd
         tokenInfo.pendingRewardUSD = Times(
           tokenInfo.pendingReward,
-          lpPrice
+          candyPrice
         ).toString();
 
         // console.log(tokenInfo.pendingReward, 99)

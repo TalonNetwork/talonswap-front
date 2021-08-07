@@ -13,7 +13,7 @@
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "copy-to-clipboard": "^3.3.1",
-    "element-plus": "^1.0.2-beta.46",
+    "element-plus": "^1.0.2-beta.70",
     "ethers": "4",
     "nerve-sdk-js": "^1.0.7",
     "path": "^0.12.7",

@@ -23,12 +23,8 @@
           placeholder=""
           popper-class="farm-select"
         >
-          <el-option
-            v-for="item in sortList"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          ></el-option>
+          <el-option :label="$t('farmRankType.apr')" value="1"></el-option>
+          <el-option :label="$t('farmRankType.usd')" value="2"></el-option>
         </el-select>
       </div>
       <div class="mortgage">
@@ -65,29 +61,21 @@ import {
   onMounted,
   ref,
   onUnmounted,
-  watch,
-  computed
+  watch
 } from "vue";
 import FarmItem from "./FarmItem.vue";
 import useFarmData from "@/hooks/farm/useData";
 import nerve from "nerve-sdk-js";
 import config from "@/config";
-import { useI18n } from "vue-i18n";
 
 nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 
 export default defineComponent({
   name: "Farm",
   setup() {
-    const { t } = useI18n();
     const uniLoading = ref(true);
     const talonLoading = ref(true);
     const current = ref(1); // uniFarm -1 / talonFarm -2
-    // 下拉框
-    const sortList = computed(() => [
-      { value: "1", label: t("farmRankType.apr") },
-      { value: "2", label: t("farmRankType.usd") }
-    ])
     const state = reactive({
       sortValue: "1", // 下拉框值
       mortgageValue: false // 只看已质押
@@ -137,7 +125,6 @@ export default defineComponent({
       current,
       uniLoading,
       talonLoading,
-      sortList,
       ...toRefs(state),
       talonList,
       uniList,
