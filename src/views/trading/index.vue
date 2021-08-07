@@ -1,14 +1,16 @@
 <template>
   <div class="w1300 trading-page">
     <overview v-if="showOverview"></overview>
-    <swap @toggleExpand="toggleExpand"></swap>
+    <swap :assetsList="assetsList" @toggleExpand="toggleExpand"></swap>
   </div>
 </template>
 
-<script lang="ts">
-import { ref, defineComponent } from "vue";
+<script>
+import { ref, defineComponent, onMounted, computed } from "vue";
 import Overview from "./Overview.vue";
 import Swap from "./Swap.vue";
+import { useStore } from "vuex";
+import { getAssetList } from "@/model";
 export default defineComponent({
   name: "trading",
   components: {
@@ -16,12 +18,24 @@ export default defineComponent({
     Swap
   },
   props: {},
-  setup: () => {
+  setup() {
+    const store = useStore();
     const showOverview = ref(false);
     function toggleExpand() {
       showOverview.value = !showOverview.value;
     }
-    return { showOverview, toggleExpand };
+
+    const talonAddress = computed(() => store.getters.talonAddress);
+    const assetsList = ref([]);
+    onMounted(async () => {
+      assetsList.value = await getAssetList(talonAddress.value);
+    });
+
+    return {
+      showOverview,
+      toggleExpand,
+      assetsList
+    };
   }
 });
 </script>

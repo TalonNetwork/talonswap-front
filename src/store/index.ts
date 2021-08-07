@@ -44,6 +44,10 @@ export default createStore<State>({
     currentAddress(state) {
       const address = state.addressInfo?.address?.Ethereum;
       return address
+    },
+    talonAddress(state) {
+      const address = state.addressInfo?.address?.Talon;
+      return address
     }
   },
   mutations: {

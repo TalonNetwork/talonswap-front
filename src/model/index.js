@@ -1,5 +1,5 @@
 import { listen } from "@/api/promiseSocket";
-import { createRPCParams } from "@/api/util";
+import { createRPCParams, divisionAndFix, Plus, Times } from "@/api/util";
 import config from "@/config";
 
 const url = config.WS_URL;
@@ -24,6 +24,7 @@ export async function broadcastHex(txHex) {
 
 // 获取账户资产列表
 export async function getAssetList(address) {
+  if (!address) return [];
   const channel = "getAccountLedgerList";
   const params = createRPCParams(channel);
   params.params.push(address);
@@ -35,7 +36,22 @@ export async function getAssetList(address) {
       channel: "psrpc:" + JSON.stringify(params)
     }
   });
-  return res;
+  if (!res) return [];
+  res.map(item => {
+    const decimal = item.decimals;
+    item.number = divisionAndFix(item.totalBalanceStr, decimal);
+    item.locking = divisionAndFix(
+      Plus(item.timeLock, item.consensusLockStr),
+      decimal
+    );
+    item.available = divisionAndFix(item.balanceStr, decimal);
+    item.valuation = Times(item.number, item.usdPrice).toFixed(2);
+  });
+  // 返回按字母排序
+  const sortDataBySymbol = [...res].sort((a, b) => {
+    return a.symbol > b.symbol ? 1 : -1;
+  });
+  return sortDataBySymbol;
 }
 
 // 获取区块信息
@@ -60,6 +76,27 @@ export async function uniAssetPrice(symbol) {
     method: channel,
     params: {
       symbol
+    }
+  };
+  const res = await listen({
+    url,
+    channel,
+    params: {
+      cmd: true,
+      channel: "cmd:" + JSON.stringify(params)
+    }
+  });
+  return res;
+}
+
+// 通过chainId assetId查询资产价格
+export async function getAssetPrice(chainId, assetId) {
+  const channel = "assetPrice";
+  const params = {
+    method: channel,
+    params: {
+      chainId: Number(chainId),
+      assetId: Number(assetId)
     }
   };
   const res = await listen({

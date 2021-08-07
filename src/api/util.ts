@@ -83,6 +83,14 @@ export function divisionAndFix(nu: string, decimals: string | number, fix = 6) {
   return str.substring(0, lastIndex);
 }
 
+export function fixNumber(str: string, fix = 8) {
+  str = "" + str
+  const int = str.split(".")[0];
+  let float = str.split(".")[1];
+  if (!float) return int;
+  return int + "." + float.slice(0, fix);
+}
+
 /**
  * 保留指定小数位数
  * @param val 要处理的数据，Number | String

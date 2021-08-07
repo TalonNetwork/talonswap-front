@@ -120,7 +120,6 @@ import {
   getIconSrc,
   getTalonAddress,
   divisionAndFix,
-  createRPCParams,
   Plus,
   Times,
   _networkInfo
@@ -128,6 +127,7 @@ import {
 import SymbolIcon from "@/components/SymbolIcon.vue";
 import AssetsManage from "./AssetsManage.vue";
 import Transfer from "./transfer/index.vue";
+import { getAssetList } from "@/model";
 import config from "@/config";
 import { listen } from "@/api/promiseSocket";
 const url = config.WS_URL;
@@ -151,7 +151,6 @@ export default defineComponent({
       handler(val) {
         console.log(val, 444);
         if (val) {
-          this.talonAddress = getTalonAddress(val);
           this.getList();
         }
       }
@@ -172,6 +171,9 @@ export default defineComponent({
     },
     address() {
       return this.$store.getters.currentAddress;
+    },
+    talonAddress() {
+      return this.$store.getters.talonAddress;
     }
   },
   data() {
@@ -184,7 +186,6 @@ export default defineComponent({
       showTransfer: false,
       currentTab: "first",
       tableData: [],
-      talonAddress: "",
       transferAsset: {}
     };
   },
@@ -192,35 +193,12 @@ export default defineComponent({
   methods: {
     async getList() {
       this.loading = true;
-      const channel = "getAccountLedgerList";
-      const params = createRPCParams(channel);
-      params.params.push(this.talonAddress);
-      const res = await listen({
-        url,
-        channel,
-        params: {
-          cmd: true,
-          channel: "psrpc:" + JSON.stringify(params)
-        }
-      });
+      const res = await getAssetList(this.talonAddress);
       this.loading = false;
-      res.map(item => {
-        const decimal = item.decimals;
-        item.number = divisionAndFix(item.totalBalanceStr, decimal);
-        item.locking = divisionAndFix(
-          Plus(item.timeLock, item.consensusLockStr),
-          decimal
-        );
-        item.available = divisionAndFix(item.balanceStr, decimal);
-        item.valuation = Times(item.number, item.usdPrice).toFixed(2);
-      });
       const sortDataByValue = [...res].sort((a, b) => {
         return a.valuation - b.valuation > 0 ? -1 : 1;
       });
-      const sortDataBySymbol = [...res].sort((a, b) => {
-        return a.symbol > b.symbol ? 1 : -1;
-      });
-      const crossInOutSymbol = [...sortDataBySymbol].filter(item => {
+      const crossInOutSymbol = [...res].filter(item => {
         if (!item.heterogeneousList) {
           return false;
         } else {
@@ -236,7 +214,7 @@ export default defineComponent({
         }
       });
       this.sortDataByValue = sortDataByValue;
-      this.allAssetsList = sortDataBySymbol;
+      this.allAssetsList = res;
       this.crossInOutSymbol = crossInOutSymbol;
       this.filterAssets();
     },

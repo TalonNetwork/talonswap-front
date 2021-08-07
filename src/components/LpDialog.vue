@@ -29,16 +29,14 @@
         </div>
         <div class="clear"></div>
         <div class="to">
-          <el-input
-            class="no-border"
-            placeholder="0.0"
-            :model-value="numberValue"
-            @input="changeInput"
-          >
+          <el-input class="no-border" placeholder="0.0" v-model="numberValue">
             <template #append><span @click="clickMax">Max</span></template>
           </el-input>
           <span class="fr lp">{{ lpName }}</span>
         </div>
+        <span class="error-tip" v-if="amountErrorTip">
+          {{ amountErrorTip }}
+        </span>
       </div>
       <div class="dialog-footer">
         <el-button @click="closeAddOrMinus">
@@ -59,6 +57,7 @@
 <script>
 import { defineComponent, ref, watch, computed } from "vue";
 import { Minus } from "@/api/util";
+import { useI18n } from "vue-i18n";
 export default defineComponent({
   props: {
     showLPDialog: Boolean,
@@ -69,6 +68,7 @@ export default defineComponent({
     decimal: String
   },
   setup(props, { emit }) {
+    const { t } = useI18n();
     const show = ref(false);
     watch(
       () => props.showLPDialog,
@@ -77,24 +77,35 @@ export default defineComponent({
     );
 
     const disableTx = computed(() => {
-      return !Number(numberValue.value);
+      return !Number(numberValue.value) || amountErrorTip.value;
     });
 
     const numberValue = ref("");
 
-    function changeInput(val) {
-      if (!val) {
-        numberValue.value = val;
-      } else {
-        const patrn = new RegExp(
-          "^([1-9][\\d]{0,20}|0)(\\.[\\d]{0," + props.decimal + "})?$"
-        );
-        if (!patrn.exec(val) || Minus(props.balance, val) < 0) {
-          return null;
+    const amountErrorTip = ref("");
+    watch(
+      () => numberValue.value,
+      val => {
+        if (val) {
+          let decimals = props.decimal || 0;
+          let patrn = "";
+          if (!decimals) {
+            patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d])?$");
+          } else {
+            patrn = new RegExp(
+              "^([1-9][\\d]{0,20}|0)(\\.[\\d]{0," + decimals + "})?$"
+            );
+          }
+          if (!patrn.exec(val)) {
+            amountErrorTip.value = t("transfer.transfer17") + decimals;
+          } else if (!Number(props.balance) || Minus(props.balance, val) < 0) {
+            amountErrorTip.value = t("transfer.transfer15");
+          } else {
+            amountErrorTip.value = "";
+          }
         }
-        numberValue.value = val;
       }
-    }
+    );
 
     function clickMax() {
       if (!Number(props.balance)) return;
@@ -112,8 +123,8 @@ export default defineComponent({
     return {
       show,
       numberValue,
+      amountErrorTip,
       disableTx,
-      changeInput,
       clickMax,
       closeAddOrMinus,
       confirmAddOrMinus
@@ -138,11 +149,12 @@ export default defineComponent({
     }
     .infos {
       width: 417px;
-      height: 94px;
+      height: 98px;
       padding: 15px 20px;
       background: #ffffff;
       border: 1px solid #e3eeff;
       border-radius: 15px;
+      position: relative;
       .in {
         font-size: 14px;
         font-weight: 500;
@@ -178,6 +190,13 @@ export default defineComponent({
           font-weight: 600;
           text-align: right;
         }
+      }
+      .error-tip {
+        position: absolute;
+        left: 0;
+        top: 98px;
+        font-size: 13px;
+        color: #f56c6c;
       }
     }
   }
