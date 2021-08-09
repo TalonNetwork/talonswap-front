@@ -77,7 +77,7 @@ export default defineComponent({
     );
 
     const disableTx = computed(() => {
-      return !Number(numberValue.value) || amountErrorTip.value;
+      return !!(!Number(numberValue.value) || amountErrorTip.value);
     });
 
     const numberValue = ref("");

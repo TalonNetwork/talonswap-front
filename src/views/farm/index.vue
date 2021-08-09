@@ -971,6 +971,9 @@ export default defineComponent({
   background: #5f71f5 !important;
   border: 0 !important;
   border-radius: 10px;
+  .el-select-dropdown__item.hover, .el-select-dropdown__item:hover {
+    background: #5f71f5;
+  }
   .el-select-dropdown__item {
     span {
       color: #fff;
