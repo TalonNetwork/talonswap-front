@@ -39,12 +39,12 @@ export async function getAssetList(address) {
   if (!res) return [];
   res.map(item => {
     const decimal = item.decimals;
-    item.number = divisionAndFix(item.totalBalanceStr, decimal);
+    item.number = divisionAndFix(item.totalBalanceStr, decimal, decimal);
     item.locking = divisionAndFix(
       Plus(item.timeLock, item.consensusLockStr),
       decimal
     );
-    item.available = divisionAndFix(item.balanceStr, decimal);
+    item.available = divisionAndFix(item.balanceStr, decimal, decimal);
     item.valuation = Times(item.number, item.usdPrice).toFixed(2);
   });
   // 返回按字母排序
@@ -125,6 +125,32 @@ export async function getAssetBalance(chainId, assetId, address) {
     params: {
       cmd: true,
       channel: "psrpc:" + JSON.stringify(params)
+    }
+  });
+  return res;
+}
+
+/**
+ * swap 寻找最佳交易路径
+ * data: {
+ *  tokenInStr: "5-1", from资产chainId-assetId
+ *  tokenInAmount: "100000000", from数量*精度
+ *  tokenOutStr
+ * }
+ */
+export async function getBestTradeExactIn(data) {
+  const maxPairSize = data.maxPairSize || 3;
+  const channel = "getBestTradeExactIn";
+  const params = {
+    method: channel,
+    params: { ...data, maxPairSize }
+  };
+  const res = await listen({
+    url,
+    channel,
+    params: {
+      cmd: true,
+      channel: "cmd:" + JSON.stringify(params)
     }
   });
   return res;

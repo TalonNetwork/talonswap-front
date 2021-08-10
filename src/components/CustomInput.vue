@@ -84,7 +84,8 @@ export default {
       amount: "",
       list: [],
       showDialog: false,
-      searchVal: ""
+      searchVal: "",
+      chooseAsset: {}
     };
   },
   watch: {
@@ -110,7 +111,18 @@ export default {
   methods: {
     changeInput(val) {
       // this.amount = val;
-      this.$emit("update:inputVal", val);
+      let decimals = this.chooseAsset.decimals || 0;
+      let patrn = "";
+      if (!decimals) {
+        patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d])?$");
+      } else {
+        patrn = new RegExp(
+          "^([1-9][\\d]{0,20}|0)(\\.[\\d]{0," + decimals + "})?$"
+        );
+      }
+      if (patrn.exec(val) || val === "") {
+        this.$emit("update:inputVal", val);
+      }
     },
     filter(str) {
       if (!str) {
@@ -126,6 +138,7 @@ export default {
     },
     changeSelect(asset) {
       this.$emit("selectAsset", asset);
+      this.chooseAsset = asset;
       this.showDialog = false;
     },
     max() {

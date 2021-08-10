@@ -68,7 +68,7 @@ export default defineComponent({
   watch: {
     amount(val) {
       if (val) {
-        let decimals = this.transferAsset.decimals || 0;
+        /* let decimals = this.transferAsset.decimals || 0;
         let patrn = "";
         if (!decimals) {
           patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d])?$");
@@ -79,10 +79,8 @@ export default defineComponent({
         }
         if (!patrn.exec(val)) {
           this.amountErrorTip = this.$t("transfer.transfer17") + decimals;
-        } else if (
-          !Number(this.balance) ||
-          Minus(this.balance, this.amount) < 0
-        ) {
+        } else  */
+        if (!Number(this.balance) || Minus(this.balance, this.amount) < 0) {
           this.amountErrorTip = this.$t("transfer.transfer15");
         } else {
           this.amountErrorTip = "";

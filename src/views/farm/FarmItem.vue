@@ -44,7 +44,7 @@
         </collapse-transition>
       </div>
     </template>
-    <div class="more">
+    <div class="more" v-if="isTalon">
       <span class="link" @click="createFarm">{{ $t("farm.farm11") }}</span>
     </div>
   </div>

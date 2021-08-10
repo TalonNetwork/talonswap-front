@@ -69,7 +69,9 @@
       <div class="content">
         <div class="top">
           <span>{{ superLong(address, 9) }}</span>
-          <span><i class="iconfont icon-fuzhi"></i></span>
+          <span @click="$copy(address)">
+            <i class="iconfont icon-fuzhi"></i>
+          </span>
           <span @click="openUrl">
             <i
               class="iconfont icon-tiaozhuanlianjie"

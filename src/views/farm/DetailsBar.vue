@@ -25,7 +25,7 @@
             type="primary"
             size="small"
             @click="gether"
-            :disabled="!Number(tokenInfo.pendingRewardUSD)"
+            :disabled="!!!Number(tokenInfo.pendingReward)"
           >
             {{ $t("farm.farm21") }}
           </el-button>
@@ -54,7 +54,7 @@
               type="primary"
               size="small"
               icon="el-icon-minus"
-              :disabled="!Number(tokenInfo.stakeAmount)"
+              :disabled="!!!Number(tokenInfo.stakeAmount)"
               @click="handleLP('minus')"
             ></el-button>
             <el-button
@@ -62,7 +62,7 @@
               type="primary"
               size="small"
               icon="el-icon-plus"
-              :disabled="!Number(tokenInfo.syrupTokenBalance)"
+              :disabled="!!!Number(tokenInfo.syrupTokenBalance)"
               @click="handleLP('add')"
             ></el-button>
           </template>

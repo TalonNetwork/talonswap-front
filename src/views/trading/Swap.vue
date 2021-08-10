@@ -47,43 +47,47 @@
         <i class="iconfont icon-qiehuan" @click="toggleDirection"></i>
       </div>
       <div class="confirm-wrap">
-        <el-button type="primary">{{ $t("public.public10") }}</el-button>
+        <el-button type="primary">
+          {{ $t("public.public10") }}
+        </el-button>
       </div>
     </div>
-    <div class="swap-setting-info">
-      <div class="info-item flex-between">
-        <div class="left">{{ $t("trading.trading6") }}</div>
-        <div class="right">3%</div>
-      </div>
-      <div class="info-item flex-between">
-        <div class="left">{{ $t("trading.trading7") }}</div>
-        <div class="right">0.03%</div>
-      </div>
-      <div class="info-item flex-between">
-        <div class="left">{{ $t("trading.trading8") }}</div>
-        <div class="right">46485.47 USDT</div>
-      </div>
-      <div class="info-item flex-between">
-        <div class="left">{{ $t("trading.trading9") }}</div>
-        <div class="right">0.00012 ETH</div>
-      </div>
-    </div>
-    <div class="swap-route">
-      <div class="name">{{ $t("trading.trading10") }}</div>
-      <div class="route-network flex-center">
-        <div class="route-item">
-          <div class="img"></div>
-          <span class="symbol">BNB</span>
-          <span>&gt;</span>
+    <div class="setting-and-route" v-show="showSwapConfig">
+      <div class="swap-setting-info">
+        <div class="info-item flex-between">
+          <div class="left">{{ $t("trading.trading6") }}</div>
+          <div class="right">3%</div>
         </div>
-        <div class="route-item">
-          <div class="img"></div>
-          <span class="symbol">BUSD</span>
-          <span>&gt;</span>
+        <div class="info-item flex-between">
+          <div class="left">{{ $t("trading.trading7") }}</div>
+          <div class="right">0.03%</div>
         </div>
-        <div class="route-item">
-          <div class="img"></div>
-          <span class="symbol">USDT</span>
+        <div class="info-item flex-between">
+          <div class="left">{{ $t("trading.trading8") }}</div>
+          <div class="right">46485.47 USDT</div>
+        </div>
+        <div class="info-item flex-between">
+          <div class="left">{{ $t("trading.trading9") }}</div>
+          <div class="right">0.00012 ETH</div>
+        </div>
+      </div>
+      <div class="swap-route">
+        <div class="name">{{ $t("trading.trading10") }}</div>
+        <div class="route-network flex-center">
+          <div class="route-item">
+            <div class="img"></div>
+            <span class="symbol">BNB</span>
+            <span>&gt;</span>
+          </div>
+          <div class="route-item">
+            <div class="img"></div>
+            <span class="symbol">BUSD</span>
+            <span>&gt;</span>
+          </div>
+          <div class="route-item">
+            <div class="img"></div>
+            <span class="symbol">USDT</span>
+          </div>
         </div>
       </div>
     </div>
@@ -128,9 +132,9 @@
 <script>
 import { defineComponent, ref, reactive, toRefs, watch, computed } from "vue";
 import CustomInput from "@/components/CustomInput.vue";
-import { Minus, Division, fixNumber } from "@/api/util";
+import { Minus, Division, fixNumber, timesDecimals } from "@/api/util";
 import { useI18n } from "vue-i18n";
-import { getAssetPrice } from "@/model";
+import { getAssetPrice, getBestTradeExactIn } from "@/model";
 export default defineComponent({
   name: "swap",
   components: {
@@ -147,7 +151,8 @@ export default defineComponent({
       fromAsset: {},
       toAsset: {},
       fromAmountError: "",
-      toAmountError: ""
+      toAmountError: "",
+      showSwapConfig: false
     });
 
     function selectAsset(asset, type) {
@@ -167,49 +172,51 @@ export default defineComponent({
       }
     }
 
+    // 监听fromAmount变化
     watch(
       () => state.fromAmount,
-      () => checkAmount("from")
+      val => {
+        if (val) {
+          if (
+            !Number(state.fromAsset.available) ||
+            Minus(state.fromAsset.available, val) < 0
+          ) {
+            state.fromAmountError = t("transfer.transfer15");
+          } else {
+            state.fromAmountError = "";
+          }
+          const tokenInStr = state.fromAsset.assetKey;
+          if (tokenInStr) {
+            const tokenOutStr = state.toAsset.assetKey;
+            const tokenInAmount = timesDecimals(val, state.fromAsset.decimals);
+            getTradeExactIn(tokenInStr, tokenOutStr, tokenInAmount);
+          }
+        }
+      }
     );
     watch(
       () => state.toAmount,
-      () => checkAmount("to")
+      val => {
+        if (val) {
+          const tokenInStr = state.toAsset.assetKey;
+          if (tokenInStr) {
+            const tokenOutStr = state.toAsset.assetKey;
+            const tokenInAmount = timesDecimals(val, state.toAsset.decimals);
+            getTradeExactIn(tokenInStr, tokenOutStr, tokenInAmount);
+          }
+        }
+      }
     );
-    // 验证数量
-    function checkAmount(type) {
-      let amount, asset, amountErrorTip;
-      if (type === "from") {
-        amount = state.fromAmount;
-        asset = state.fromAsset;
-      } else {
-        amount = state.toAmount;
-        asset = state.toAsset;
-      }
-      if (amount) {
-        let decimals = asset.decimals || 0;
-        let patrn = "";
-        if (!decimals) {
-          patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d])?$");
-        } else {
-          patrn = new RegExp(
-            "^([1-9][\\d]{0,20}|0)(\\.[\\d]{0," + decimals + "})?$"
-          );
-        }
-        if (!patrn.exec(amount)) {
-          amountErrorTip = t("transfer.transfer17") + decimals;
-        } else if (
-          !Number(asset.available) ||
-          Minus(asset.available, amount) < 0
-        ) {
-          amountErrorTip = t("transfer.transfer15");
-        } else {
-          amountErrorTip = "";
-        }
-      }
-      if (type === "from") {
-        state.fromAmountError = amountErrorTip;
-      } else {
-        state.toAmountError = amountErrorTip;
+
+    async function getTradeExactIn(tokenInStr, tokenOutStr, tokenInAmount) {
+      // const tokenOutAmount = state.toAmount;
+      if (tokenInStr && tokenOutStr && tokenInAmount) {
+        const res = await getBestTradeExactIn({
+          tokenInStr,
+          tokenOutStr,
+          tokenInAmount
+        });
+        console.log(res, 9633);
       }
     }
 
@@ -296,7 +303,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .swap {
   width: 470px;
-  height: 752px;
+  /* height: 752px; */
   padding-bottom: 30px;
   .icon-wrap {
     .left {
@@ -327,7 +334,8 @@ export default defineComponent({
     cursor: pointer;
   }
   .exchange-rate {
-    margin: 20px 0;
+    margin-top: 20px;
+    margin-bottom: -5px;
     display: flex;
     justify-content: center;
     i {
@@ -335,6 +343,11 @@ export default defineComponent({
       margin: 3px 0 0 5px;
       cursor: pointer;
       color: #4a5ef2;
+    }
+  }
+  .swap-area {
+    .confirm-wrap {
+      margin-top: 25px;
     }
   }
   .swap-setting-info {

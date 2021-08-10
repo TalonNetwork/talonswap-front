@@ -79,14 +79,14 @@ export default defineComponent({
   watch: {
     amount(val) {
       if (val) {
-        let decimals = this.transferAsset.decimals || 0;
-        let patrn = "";
         const nvtBalance = this.assetsList.find(v => {
           return v.chainId === config.chainId && v.assetId === config.assetId;
         }).available;
         const isNVT =
           this.transferAsset.chainId === config.chainId &&
           this.transferAsset.assetId === config.assetId;
+        /* let decimals = this.transferAsset.decimals || 0;
+        let patrn = "";
         if (!decimals) {
           patrn = new RegExp("^([1-9][\\d]{0,20}|0)(\\.[\\d])?$");
         } else {
@@ -96,7 +96,8 @@ export default defineComponent({
         }
         if (!patrn.exec(val)) {
           this.amountErrorTip = this.$t("transfer.transfer17") + decimals;
-        } else if (
+        } else  */
+        if (
           !Number(this.balance) ||
           Minus(this.balance, this.amount) < 0 ||
           (isNVT && Minus(this.balance, Plus(this.amount, this.fee)) < 0)

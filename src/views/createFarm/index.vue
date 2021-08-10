@@ -226,27 +226,7 @@ export default defineComponent({
     onMounted(() => {
       const address = store.state.addressInfo.address.Talon;
       getAssetList(address).then(res => {
-        const data = res.filter(item => {
-          const decimal = item.decimals;
-          item.available = divisionAndFix(item.balanceStr, decimal);
-          if (!item.heterogeneousList) {
-            return true;
-          } else {
-            let supportedChain = false;
-            item.heterogeneousList.map(v => {
-              Object.keys(_networkInfo).map(key => {
-                if (_networkInfo[key].chainId === v.heterogeneousChainId) {
-                  supportedChain = true;
-                }
-              });
-            });
-            return supportedChain;
-          }
-        });
-        const sortDataBySymbol = [...data].sort((a, b) => {
-          return a.symbol > b.symbol ? 1 : -1;
-        });
-        assetList.value = sortDataBySymbol;
+        assetList.value = res;
       });
     });
 
