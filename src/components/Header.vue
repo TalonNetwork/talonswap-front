@@ -13,8 +13,8 @@
         text-color="#fff"
         active-text-color="#fff"
       >
-        <!-- <el-menu-item index="trading">{{ $t("header.header1") }}</el-menu-item>
-        <el-menu-item index="liquidity">
+        <el-menu-item index="trading">{{ $t("header.header1") }}</el-menu-item>
+        <!-- <el-menu-item index="liquidity">
           {{ $t("header.header2") }}
         </el-menu-item> -->
         <el-menu-item index="farm">Farm</el-menu-item>

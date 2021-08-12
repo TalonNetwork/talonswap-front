@@ -118,7 +118,6 @@ import { genId, divisionDecimals, timesDecimals } from "@/api/util";
 import { getAssetBalance } from "@/model";
 import { NTransfer } from "@/api/api";
 import nerve from "nerve-sdk-js";
-nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 
 const url = config.WS_URL;
 
@@ -144,7 +143,7 @@ export default {
   },
   computed: {
     talonAddress() {
-      return this.$store.state.addressInfo?.address.Talon;
+      return this.$store.state.addressInfo?.address?.Talon;
     }
   },
   mounted() {

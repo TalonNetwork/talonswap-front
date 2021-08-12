@@ -38,27 +38,26 @@
           <DetailsBar
             :tokenInfo="item"
             :isTalon="isTalon"
+            :talonAddress="talonAddress"
             v-show="item.showDetail"
             @loading="handleLoading"
           ></DetailsBar>
         </collapse-transition>
       </div>
     </template>
-    <div class="more" v-if="isTalon">
+    <div class="more" v-if="isTalon && talonAddress">
       <span class="link" @click="createFarm">{{ $t("farm.farm11") }}</span>
     </div>
   </div>
 </template>
 
 <script>
-import { defineComponent, reactive, toRefs } from "vue";
+import { defineComponent, reactive, toRefs, computed } from "vue";
 import DetailsBar from "./DetailsBar.vue";
 import CollapseTransition from "@/components/CollapseTransition.vue";
 import FarmSymbol from "./FarmSymbol.vue";
-import nerve from "nerve-sdk-js";
-import config from "@/config";
 import { useRouter } from "vue-router";
-nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
+import { useStore } from "vuex";
 
 export default defineComponent({
   name: "FarmItem",
@@ -69,8 +68,13 @@ export default defineComponent({
   },
   setup(props, { emit }) {
     const router = useRouter();
+    const store = useStore();
     const state = reactive({
       contractAddress: "0x0faee22173db311f4c57c81ec6867e5deef6c218" //合约地址
+    });
+
+    const talonAddress = computed(() => {
+      return store.getters.talonAddress;
     });
 
     async function createFarm() {
@@ -91,6 +95,7 @@ export default defineComponent({
 
     return {
       ...toRefs(state),
+      talonAddress,
       showId,
       handleLoading,
       createFarm

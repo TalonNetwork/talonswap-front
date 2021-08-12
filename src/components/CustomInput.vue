@@ -32,6 +32,7 @@
       :show-close="false"
       top="10vh"
       v-model="showDialog"
+      @closed="searchVal = ''"
     >
       <el-input
         v-model="searchVal"

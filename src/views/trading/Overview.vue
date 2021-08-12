@@ -2,34 +2,40 @@
   <div class="overview pd_40_rd_20">
     <div class="head">
       <div class="top flex-center">
-        <div class="img1"></div>
-        <div class="img2"></div>
-        <div class="pair">ETH/USDT</div>
+        <symbol-icon class="img1" :icon="swapSymbol[0]"></symbol-icon>
+        <symbol-icon class="img2" :icon="swapSymbol[1]"></symbol-icon>
+        <div class="pair">{{ swapSymbol[0] }}/{{ swapSymbol[1] }}</div>
       </div>
-      <div class="bottom">2356.87 USDT</div>
+      <div class="bottom">{{ swapRate }}</div>
     </div>
     <div class="order-history">
       <div class="title">{{ $t("trading.trading1") }}</div>
-      <el-table :data="tableData" height="435">
-        <el-table-column width="50px"></el-table-column>
+      <el-table
+        :data="list"
+        height="435"
+        v-loading="loading"
+        element-loading-background="rgba(255, 255, 255, 0.8)"
+      >
+        <el-table-column width="20px"></el-table-column>
         <el-table-column
-          prop="symbol"
+          prop="time"
           :label="$t('trading.trading2')"
-          width="180"
         ></el-table-column>
-        <el-table-column
-          prop="available"
-          :label="$t('trading.trading3')"
-          width="180"
-        ></el-table-column>
-        <el-table-column
-          prop="lock"
-          :label="$t('trading.trading4')"
-        ></el-table-column>
-        <el-table-column
-          prop="total"
-          :label="$t('trading.trading5')"
-        ></el-table-column>
+        <el-table-column :label="$t('trading.trading3')">
+          <template #default="scope">
+            {{ scope.row.fromAmount }} {{ scope.row.fromSymbol }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="lock" :label="$t('trading.trading4')">
+          <template #default="scope">
+            {{ scope.row.toAmount }} {{ scope.row.toSymbol }}
+          </template>
+        </el-table-column>
+        <el-table-column :label="$t('trading.trading5')" width="80px">
+          <template #default="scope">
+            <span class="iconfont icon-chenggong" :scope="scope"></span>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
   </div>
@@ -37,7 +43,20 @@
 
 <script>
 import { defineComponent } from "vue";
+import SymbolIcon from "@/components/SymbolIcon.vue";
 export default defineComponent({
+  props: {
+    swapSymbol: {
+      type: Array,
+      default: () => []
+    },
+    swapRate: String,
+    list: Array,
+    loading: Boolean
+  },
+  components: {
+    SymbolIcon
+  },
   setup() {
     return {};
   }
@@ -56,11 +75,9 @@ export default defineComponent({
       width: 35px;
       height: 35px;
       border-radius: 50%;
-      background-color: red;
     }
     .img2 {
       margin-left: -8px;
-      background-color: blue;
     }
     .pair {
       margin-left: 10px;
@@ -76,8 +93,20 @@ export default defineComponent({
       font-size: 24px;
       margin-bottom: 15px;
     }
-    .el-table th .cell {
-      font-weight: 400;
+    :deep(.el-table) {
+      th .cell {
+        font-size: 16px;
+        font-weight: 400;
+      }
+      tr .cell {
+        line-height: 46px;
+        font-size: 16px;
+        color: #333;
+      }
+      .iconfont {
+        color: #21d8ba;
+        font-size: 28px;
+      }
     }
   }
 }

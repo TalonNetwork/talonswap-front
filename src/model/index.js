@@ -155,3 +155,55 @@ export async function getBestTradeExactIn(data) {
   });
   return res;
 }
+
+/**
+ * swap 查询交易对信息
+ * data: {
+ *  tokenAStr: "5-1", from资产chainId-assetId
+ *  tokenBStr
+ * }
+ */
+export async function getSwapPairInfo(data) {
+  const channel = "getSwapPairInfo";
+  const params = {
+    method: channel,
+    params: data
+  };
+  const res = await listen({
+    url,
+    channel,
+    params: {
+      cmd: true,
+      channel: "cmd:" + JSON.stringify(params)
+    }
+  });
+  return res;
+}
+
+/**
+ * swap 用户订单历史列表
+ * data: {
+ *  pairAddress
+ *  userAddress
+ *  pageIndex
+ *  pageSize
+ * }
+ */
+export async function userTradeHistoryPage(data) {
+  const pageIndex = data.pageIndex || 1;
+  const pageSize = data.pageSize || 10;
+  const channel = "userTradeHistoryPage";
+  const params = {
+    method: channel,
+    params: { ...data, pageIndex, pageSize }
+  };
+  const res = await listen({
+    url,
+    channel,
+    params: {
+      cmd: true,
+      channel: "cmd:" + JSON.stringify(params)
+    }
+  });
+  return res;
+}

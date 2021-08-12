@@ -25,7 +25,7 @@
             type="primary"
             size="small"
             @click="gether"
-            :disabled="!!!Number(tokenInfo.pendingReward)"
+            :disabled="!!!Number(tokenInfo.pendingReward) || !talonAddress"
           >
             {{ $t("farm.farm21") }}
           </el-button>
@@ -54,7 +54,7 @@
               type="primary"
               size="small"
               icon="el-icon-minus"
-              :disabled="!!!Number(tokenInfo.stakeAmount)"
+              :disabled="!!!Number(tokenInfo.stakeAmount)|| !talonAddress"
               @click="handleLP('minus')"
             ></el-button>
             <el-button
@@ -62,7 +62,9 @@
               type="primary"
               size="small"
               icon="el-icon-plus"
-              :disabled="!!!Number(tokenInfo.syrupTokenBalance)"
+              :disabled="
+                !!!Number(tokenInfo.syrupTokenBalance) || !talonAddress
+              "
               @click="handleLP('add')"
             ></el-button>
           </template>
@@ -95,7 +97,6 @@ import { ethers } from "ethers";
 import { getAssetBalance } from "@/model";
 import LpDialog from "@/components/LpDialog";
 
-nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 export default defineComponent({
   name: "details-bar",
   components: {
@@ -110,7 +111,8 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
-    isTalon: Boolean
+    isTalon: Boolean,
+    talonAddress: String
   },
   setup(props, { emit }) {
     const store = useStore();
@@ -123,9 +125,6 @@ export default defineComponent({
     const addressInfo = computed(() => {
       return store.state.addressInfo;
     });
-    // const balance = computed(() => {
-
-    // })
     const balance = ref(0);
     onMounted(async () => {
       getERC20Allowance();

@@ -355,3 +355,9 @@ export const _networkInfo = {
     homestead: "0x141"
   } */
 };
+
+// assetKey -> [chainId, assetId]
+export function parseChainInfo(key: string) {
+  const arr = key.split("-");
+  return arr.map(v => Number(v));
+}

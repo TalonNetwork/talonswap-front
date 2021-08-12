@@ -12,6 +12,7 @@
       <el-form-item :label="$t('farm.farm13')" prop="tokenA">
         <el-select
           v-model="model.tokenA"
+          filterable
           :placeholder="$t('createFarm.createFarm1')"
         >
           <el-option
@@ -34,6 +35,7 @@
       <el-form-item :label="$t('farm.farm15')" prop="tokenB">
         <el-select
           v-model="model.tokenB"
+          filterable
           :placeholder="$t('createFarm.createFarm3')"
         >
           <el-option
@@ -100,7 +102,6 @@ import { getAssetList, getBlockInfo } from "@/model";
 import { divisionAndFix, _networkInfo, Minus, timesDecimals } from "@/api/util";
 import config from "@/config";
 import dayjs from "dayjs";
-nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 
 function parseChainInfo(key) {
   const arrry = key.split("-");

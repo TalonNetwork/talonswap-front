@@ -23,6 +23,7 @@ module.exports = {
     trailingComma: "off",
     "prefer-const": 0,
     "no-case-declarations": 0,
-    "prefer-rest-params": 0
+    "prefer-rest-params": 0,
+    "vue/no-unused-vars": 0
   }
 };

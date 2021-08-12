@@ -65,10 +65,6 @@ import {
 } from "vue";
 import FarmItem from "./FarmItem.vue";
 import useFarmData from "@/hooks/farm/useData";
-import nerve from "nerve-sdk-js";
-import config from "@/config";
-
-nerve.customnet(config.chainId, config.API_URL, config.timeout); // sdk设置测试网chainId
 
 export default defineComponent({
   name: "Farm",

@@ -21,6 +21,7 @@ const cn = {
     public14: "网络错误",
     public15: "手续费: ",
     public16: "余额: ",
+    public17: "流动性不足"
   },
   home: {
     home1: "总质押: ",
