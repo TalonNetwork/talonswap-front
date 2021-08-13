@@ -99,6 +99,9 @@ const cn = {
     liquidity9: "确认添加",
     liquidity10: "你是该交易对首位流动性的提供者，因此你首次加入池子 的Token比例会作为他们的初始价格",
     liquidity11: "占资金池比例",
+    liquidity12: "创建流动性",
+    liquidity13: "创建交易对",
+    liquidity14: "创建交易对成功, 请添加流动性",
   },
   login: {
     login1: "请先生成Talon地址",

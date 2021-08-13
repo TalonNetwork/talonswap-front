@@ -89,6 +89,7 @@ export default function useEthereum() {
     localStorage.setItem("providerType", providerType);
     listenAccountChange();
     listenNetworkChange();
+    reload()
   }
 
   function disconnect() {

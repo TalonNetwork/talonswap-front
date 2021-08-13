@@ -207,3 +207,57 @@ export async function userTradeHistoryPage(data) {
   });
   return res;
 }
+
+/**
+ * liquidity 查询添加swap流动性的最小资产数量
+ * data: {
+ *  amountA
+ *  amountB
+ *  tokenAStr
+ *  tokenBStr
+ * }
+ */
+export async function calMinAmountOnSwapAddLiquidity(data) {
+  const channel = "calMinAmountOnSwapAddLiquidity";
+  const params = {
+    method: channel,
+    params: data
+  };
+  const res = await listen({
+    url,
+    channel,
+    params: {
+      cmd: true,
+      channel: "cmd:" + JSON.stringify(params)
+    }
+  });
+  return res;
+}
+
+/**
+ * liquidity 查询用户参与流动性的列表
+ * data: {
+ *  amountA
+ *  amountB
+ *  tokenAStr
+ *  tokenBStr
+ * }
+ */
+export async function userLiquidityPage(data) {
+  const pageIndex = data.pageIndex || 1;
+  const pageSize = data.pageSize || 10;
+  const channel = "userLiquidityPage";
+  const params = {
+    method: channel,
+    params: { ...data, pageIndex, pageSize }
+  };
+  const res = await listen({
+    url,
+    channel,
+    params: {
+      cmd: true,
+      channel: "cmd:" + JSON.stringify(params)
+    }
+  });
+  return res;
+}

@@ -1,5 +1,9 @@
 <template>
-  <div class="swap pd_40_rd_20">
+  <div
+    class="swap pd_40_rd_20"
+    v-loading="loading"
+    element-loading-background="rgba(255, 255, 255, 0.8)"
+  >
     <div class="icon-wrap flex-between">
       <div class="left click" @click="toggleExpand">
         <i class="iconfont icon-zhankai"></i>
@@ -164,13 +168,6 @@ import { ElMessage } from "element-plus";
 import SymbolIcon from "@/components/SymbolIcon.vue";
 import { NTransfer } from "@/api/api";
 
-function constructBalance(fromKey, toKey, reserve0, reserve1) {
-  return nerve.swap.getReserves(
-    { chainId: fromKey.split("-")[0], assetId: fromKey.split("-")[1] },
-    { chainId: toKey.split("-")[0], assetId: toKey.split("-")[1] },
-    { reserve0, reserve1 }
-  );
-}
 export default defineComponent({
   name: "swap",
   components: {
@@ -200,7 +197,8 @@ export default defineComponent({
       insufficient: false, // 流动性不足
       protectPercent: 1, // 划点保护
       protectSets: [0.5, 1, 3],
-      routesSymbol: []
+      routesSymbol: [],
+      loading: false
     });
 
     // 选择swap资产 asset-选择的资产, type-from/to
@@ -443,10 +441,10 @@ export default defineComponent({
         const key = fromAssetKey + "_" + toAssetKey;
         const info = storedSwapPairInfo[key];
         if (!info) {
-          setTimeout(() => {
-            getSwapAmount(amount, type);
-          }, 200);
-          return;
+          // setTimeout(() => {
+          //   getSwapAmount(amount, type);
+          // }, 200);
+          return false;
         }
         // debugger;
         if (info && info.routes.length) {
@@ -486,12 +484,12 @@ export default defineComponent({
       const toAmount = state.toAmount;
       if (swapDirection.value === "from-to") {
         swapRate.value = `1 ${state.fromAsset.symbol} ≈ ${fixNumber(
-          Division(toAmount, fromAmount).toString(),
+          Division(toAmount, fromAmount).toFixed(),
           state.toAsset.decimals
         )} ${state.toAsset.symbol}`;
       } else {
         swapRate.value = `1 ${state.toAsset.symbol} ≈ ${fixNumber(
-          Division(fromAmount, toAmount).toString(),
+          Division(fromAmount, toAmount).toFixed(),
           state.fromAsset.decimals
         )} ${state.fromAsset.symbol}`;
       }
@@ -500,7 +498,7 @@ export default defineComponent({
     const minReceive = computed(() => {
       if (!state.toAmount) return "";
       return fixNumber(
-        Times(state.toAmount, 1 - state.protectPercent / 100).toString(),
+        Times(state.toAmount, 1 - state.protectPercent / 100).toFixed(),
         state.toAsset.decimals
       );
     });
@@ -518,7 +516,7 @@ export default defineComponent({
       if (type === "from") {
         state.fromAmount = state.fromAsset.available;
       } else {
-        state.fromAmount = state.toAsset.available;
+        state.toAmount = state.toAsset.available;
       }
     }
 
@@ -543,6 +541,7 @@ export default defineComponent({
     }
 
     async function swapTrade() {
+      state.loading = true;
       const fromAssetKey = state.fromAsset.assetKey;
       const toAssetKey = state.toAsset.assetKey;
       const fromDecimal = state.fromAsset.decimals;
@@ -590,6 +589,7 @@ export default defineComponent({
           type: "warning"
         });
       }
+      state.loading = false;
     }
 
     const addressInfo = computed(() => {

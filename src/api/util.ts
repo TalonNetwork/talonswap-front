@@ -87,8 +87,9 @@ export function fixNumber(str: string, fix = 8) {
   str = "" + str
   const int = str.split(".")[0];
   let float = str.split(".")[1];
-  if (!float) return int;
-  return int + "." + float.slice(0, fix);
+  if (!float || !Number(float)) return int;
+  float = float.slice(0, fix).replace(/(0+)$/g,"")
+  return Number(float) ? int + "." + float : int
 }
 
 /**

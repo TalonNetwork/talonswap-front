@@ -164,11 +164,5 @@ export default defineComponent({
     text-align: center;
     bottom: 20px;
   }
-  .el-icon-arrow-right {
-    &.expand {
-      transform: rotate(90deg);
-    }
-    transition: transform 0.1s ease;
-  }
 }
 </style>

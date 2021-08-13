@@ -12,52 +12,132 @@
           </el-button>
         </div>
       </div>
-      <div class="your-liquidity">
+      <div class="your-liquidity" v-if="talonAddress">
         <h3>{{ $t("liquidity.liquidity4") }}</h3>
         <div class="liquidity-list">
-          <div>
-            <div class="list-item">
+          <div v-for="(item, index) in liquidityList" :key="index">
+            <div :class="['list-item', item.showDetail ? 'hide-border' : '']">
               <div class="symbol">
-                <div class="symbol1"></div>
-                <div class="symbol2"></div>
-                <span>BNB-USDT</span>
+                <div class="img-wrap">
+                  <symbol-icon
+                    class="symbol1"
+                    :icon="item.fromSymbol"
+                  ></symbol-icon>
+                  <symbol-icon
+                    class="symbol2"
+                    :icon="item.toSymbol"
+                  ></symbol-icon>
+                </div>
+                <span>{{ item.symbol }}</span>
               </div>
-              <div class="value">0.05</div>
-              <div class="view-detail" @click="toggleDetail">
+              <div class="value">
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  :content="item.amount"
+                  placement="top"
+                >
+                  <span class="click">{{ item.amountSlice }}</span>
+                </el-tooltip>
+              </div>
+              <div class="view-detail" @click="toggleDetail(item)">
                 {{ $t("liquidity.liquidity5") }}
+                <i
+                  :class="{
+                    'el-icon-arrow-right': true,
+                    expand: item.showDetail
+                  }"
+                ></i>
               </div>
             </div>
             <collapse-transition>
-              <detail-bar v-show="showDetail"></detail-bar>
+              <detail-bar v-show="item.showDetail"></detail-bar>
             </collapse-transition>
           </div>
+          <div class="no-data" v-if="!liquidityList.length">No Data</div>
         </div>
       </div>
     </div>
-    <add-liquidity v-else v-model:show="addLiquidity"></add-liquidity>
+    <add-liquidity
+      v-else
+      v-model:show="addLiquidity"
+      :assetsList="assetsList"
+      :talonAddress="talonAddress"
+      @updateList="getUserLiquidity"
+    ></add-liquidity>
   </div>
 </template>
 
 <script>
-import { ref, defineComponent } from "vue";
+import {
+  ref,
+  defineComponent,
+  computed,
+  onMounted,
+  reactive,
+  toRefs
+} from "vue";
 import AddLiquidity from "./AddLiquidity.vue";
 import CollapseTransition from "@/components/CollapseTransition.vue";
 import DetailBar from "./DetailBar.vue";
+import { useStore } from "vuex";
+import { getAssetList, userLiquidityPage } from "@/model";
+import { divisionAndFix } from "@/api/util";
+import SymbolIcon from "@/components/SymbolIcon.vue";
 export default defineComponent({
   name: "liquidity",
   components: {
     AddLiquidity,
     CollapseTransition,
-    DetailBar
+    DetailBar,
+    SymbolIcon
   },
   props: {},
   setup: () => {
-    const addLiquidity = ref(false);
-    const showDetail = ref(false);
-    function toggleDetail() {
-      showDetail.value = !showDetail.value;
+    const store = useStore();
+    const talonAddress = computed(() => store.getters.talonAddress);
+    const state = reactive({
+      addLiquidity: false,
+      assetsList: [],
+      liquidityList: []
+    });
+    onMounted(async () => {
+      state.assetsList = await getAssetList(talonAddress.value);
+      getUserLiquidity();
+    });
+
+    async function getUserLiquidity() {
+      if (talonAddress.value) {
+        const res = await userLiquidityPage({
+          userAddress: talonAddress.value
+        });
+        if (res) {
+          const list = [];
+          res.list.map(v => {
+            const info = v.lpTokenAmount;
+            const amountSlice = divisionAndFix(info.amount, info.token.decimals, 2);
+            list.push({
+              fromSymbol: v.token0.symbol,
+              toSymbol: v.token1.symbol,
+              symbol: info.token.symbol,
+              amount: divisionAndFix(
+                info.amount,
+                info.token.decimals,
+                info.token.decimals
+              ),
+              amountSlice: amountSlice == 0 ? "0.00" : amountSlice,
+              showDetail: false
+            });
+          });
+          state.liquidityList = list;
+        }
+      }
     }
-    return { addLiquidity, showDetail, toggleDetail };
+
+    function toggleDetail(item) {
+      item.showDetail = !item.showDetail;
+    }
+    return { talonAddress, ...toRefs(state), toggleDetail };
   }
 });
 </script>
@@ -91,12 +171,34 @@ export default defineComponent({
         border-bottom: 1px solid #e4efff;
         display: flex;
         align-items: center;
+        &.hide-border {
+          border: none;
+        }
       }
       .symbol {
         flex: 5;
+        display: flex;
+        align-items: center;
+        img {
+          width: 32px;
+          height: 32px;
+          overflow: hidden;
+        }
+        .img-wrap {
+          display: flex;
+          align-items: center;
+          margin-right: 10px;
+        }
+        .symbol1 {
+          z-index: 2;
+        }
+        .symbol2 {
+          margin-left: -10px;
+        }
       }
       .value {
         flex: 3;
+        text-align: center;
       }
       .view-detail {
         flex: 2;
@@ -104,6 +206,12 @@ export default defineComponent({
         text-align: right;
         cursor: pointer;
       }
+    }
+    .no-data {
+      padding-top: 40px;
+      text-align: center;
+      color: #909399;
+      font-size: 14px;
     }
   }
 }
