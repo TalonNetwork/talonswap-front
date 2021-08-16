@@ -25,7 +25,7 @@ const cn = {
   },
   home: {
     home1: "总质押: ",
-    home2: "Talon实时信息",
+    home2: "Curium实时信息",
     home3: "当前价格",
     home4: "总流通量",
     home5: "已销毁",
@@ -104,9 +104,9 @@ const cn = {
     liquidity14: "创建交易对成功, 请添加流动性",
   },
   login: {
-    login1: "请先生成Talon地址",
+    login1: "请先生成Curium地址",
     login2: "立即生成",
-    login3: "生成Talon地址失败: ",
+    login3: "生成Curium地址失败: ",
     login4: "连接钱包"
   },
   farm: {

@@ -362,3 +362,11 @@ export function parseChainInfo(key: string) {
   const arr = key.split("-");
   return arr.map(v => Number(v));
 }
+
+//转千分位
+export function toThousands(num: string | number) {
+  const N = num.toString().split('.');
+  const int = N[0];
+  const float = N[1] ? '.' + N[1] : '';
+  return int.toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,') + float;
+}
