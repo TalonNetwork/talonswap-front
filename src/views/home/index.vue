@@ -557,13 +557,6 @@ export default {
   }
 }
 @media screen and (max-width: 1200px) {
-  .w1300 {
-    //max-width: 1920px;
-    height: auto;
-    margin: 0;
-    width: 100%;
-    padding: 20px 20px 30px 20px;
-  }
   .home .info-middle .right {
     height: 500px;
     display: none;

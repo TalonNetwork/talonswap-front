@@ -70,7 +70,7 @@
             </div>
           </div>
           <div class="link view" @click="showId(item.farmHash)">
-            详情
+            {{ $t("farm.farm6") }}
             <i
               :class="{ 'el-icon-arrow-right': true, expand: item.showDetail }"
             ></i>
@@ -160,6 +160,7 @@ export default defineComponent({
   padding: 20px 0 80px;
   min-height: 200px;
   position: relative;
+  overflow: hidden;
   .lis {
     font-family: PingFang SC;
     .title {

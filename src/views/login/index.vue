@@ -1,23 +1,25 @@
 <template>
-  <div
-    class="login"
-    v-loading="loading"
-    element-loading-background="transparent"
-  >
-    <div class="content">
-      <div class="confirm-wrap" v-if="!address">
-        <el-button type="primary" @click="showConnect">
-          {{ $t("login.login4") }}
-        </el-button>
-      </div>
-      <template v-else>
-        <h3>{{ $t("login.login1") }}</h3>
-        <div class="confirm-wrap">
-          <el-button type="primary" @click="derivedAddress">
-            {{ $t("login.login2") }}
+  <div class="w1300">
+    <div
+      class="login"
+      v-loading="loading"
+      element-loading-background="transparent"
+    >
+      <div class="content">
+        <div class="confirm-wrap" v-if="!address">
+          <el-button type="primary" @click="showConnect">
+            {{ $t("login.login4") }}
           </el-button>
         </div>
-      </template>
+        <template v-else>
+          <h3>{{ $t("login.login1") }}</h3>
+          <div class="confirm-wrap">
+            <el-button type="primary" @click="derivedAddress">
+              {{ $t("login.login2") }}
+            </el-button>
+          </div>
+        </template>
+      </div>
     </div>
   </div>
 </template>
@@ -123,18 +125,25 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .login {
-  width: 450px;
+  max-width: 450px;
   margin: 0 auto 0;
   background: #fff;
   height: 500px;
   border-radius: 20px;
   padding-top: 100px;
   .content {
-    width: 300px;
+    max-width: 300px;
     margin: 0 auto;
     text-align: center;
     h3 {
       margin: 50px 0;
+    }
+  }
+  @media screen and (max-width: 375px) {
+    .confirm-wrap {
+      .el-button {
+        max-width: 200px;
+      }
     }
   }
 }

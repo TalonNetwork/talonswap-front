@@ -405,6 +405,13 @@ export default defineComponent({
     max-width: 470px !important;
     min-width: 300px;
   }
+  .w1300 {
+    //max-width: 1920px;
+    height: auto;
+    margin: 0;
+    width: 100%;
+    padding: 20px 20px 30px 20px;
+  }
 }
 @media screen and (max-width: 610px) {
   .header .account-wrap .asset-icon i {

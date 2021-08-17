@@ -1,84 +1,86 @@
 <template>
-  <div
-    class="w1300 liquidity"
-    v-loading="loading"
-    element-loading-background="rgba(255, 255, 255, 0.8)"
-  >
-    <div class="overview" v-if="!addLiquidity">
-      <div class="top-part">
-        <div class="title">
-          <h3>{{ $t("liquidity.liquidity1") }}</h3>
-          <p>{{ $t("liquidity.liquidity2") }}</p>
-        </div>
-        <div class="confirm-wrap">
-          <el-button type="primary" @click="addLiquidity = true">
-            {{ $t("liquidity.liquidity3") }}
-          </el-button>
-        </div>
-      </div>
-      <div
-        class="your-liquidity"
-        v-if="talonAddress"
-        v-loading="myLoading"
+  <div class="w1300">
+    <div
+        class="liquidity"
+        v-loading="loading"
         element-loading-background="rgba(255, 255, 255, 0.8)"
-      >
-        <h3>{{ $t("liquidity.liquidity4") }}</h3>
-        <div class="liquidity-list">
-          <div v-for="(item, index) in liquidityList" :key="index">
-            <div :class="['list-item', item.showDetail ? 'hide-border' : '']">
-              <div class="symbol">
-                <div class="img-wrap">
-                  <symbol-icon
-                    class="symbol1"
-                    :icon="item.token0.symbol"
-                  ></symbol-icon>
-                  <symbol-icon
-                    class="symbol2"
-                    :icon="item.token1.symbol"
-                  ></symbol-icon>
+    >
+      <div class="overview" v-if="!addLiquidity">
+        <div class="top-part">
+          <div class="title">
+            <h3>{{ $t("liquidity.liquidity1") }}</h3>
+            <p>{{ $t("liquidity.liquidity2") }}</p>
+          </div>
+          <div class="confirm-wrap">
+            <el-button type="primary" @click="addLiquidity = true">
+              {{ $t("liquidity.liquidity3") }}
+            </el-button>
+          </div>
+        </div>
+        <div
+            class="your-liquidity"
+            v-if="talonAddress"
+            v-loading="myLoading"
+            element-loading-background="rgba(255, 255, 255, 0.8)"
+        >
+          <h3>{{ $t("liquidity.liquidity4") }}</h3>
+          <div class="liquidity-list">
+            <div v-for="(item, index) in liquidityList" :key="index">
+              <div :class="['list-item', item.showDetail ? 'hide-border' : '']">
+                <div class="symbol">
+                  <div class="img-wrap">
+                    <symbol-icon
+                        class="symbol1"
+                        :icon="item.token0.symbol"
+                    ></symbol-icon>
+                    <symbol-icon
+                        class="symbol2"
+                        :icon="item.token1.symbol"
+                    ></symbol-icon>
+                  </div>
+                  <span>{{ item.lpTokenAmount.token.symbol }}</span>
                 </div>
-                <span>{{ item.lpTokenAmount.token.symbol }}</span>
-              </div>
-              <div class="value">
-                <el-tooltip
-                  class="item"
-                  effect="dark"
-                  :content="item.amount"
-                  placement="top"
-                >
-                  <span class="click">{{ item.amountSlice }}</span>
-                </el-tooltip>
-              </div>
-              <div class="view-detail" @click="toggleDetail(item)">
-                {{ $t("liquidity.liquidity5") }}
-                <i
-                  :class="{
+                <div class="value">
+                  <el-tooltip
+                      class="item"
+                      effect="dark"
+                      :content="item.amount"
+                      placement="top"
+                  >
+                    <span class="click">{{ item.amountSlice }}</span>
+                  </el-tooltip>
+                </div>
+                <div class="view-detail" @click="toggleDetail(item)">
+                  {{ $t("liquidity.liquidity5") }}
+                  <i
+                      :class="{
                     'el-icon-arrow-right': true,
                     expand: item.showDetail
                   }"
-                ></i>
+                  ></i>
+                </div>
               </div>
+              <collapse-transition>
+                <detail-bar
+                    v-show="item.showDetail"
+                    :talonAddress="talonAddress"
+                    :info="item"
+                    @loading="handleLoadig"
+                ></detail-bar>
+              </collapse-transition>
             </div>
-            <collapse-transition>
-              <detail-bar
-                v-show="item.showDetail"
-                :talonAddress="talonAddress"
-                :info="item"
-                @loading="handleLoadig"
-              ></detail-bar>
-            </collapse-transition>
+            <div class="no-data" v-if="!liquidityList.length">No Data</div>
           </div>
-          <div class="no-data" v-if="!liquidityList.length">No Data</div>
         </div>
       </div>
+      <add-liquidity
+          v-else
+          v-model:show="addLiquidity"
+          :assetsList="assetsList"
+          :talonAddress="talonAddress"
+          @updateList="getUserLiquidity"
+      ></add-liquidity>
     </div>
-    <add-liquidity
-      v-else
-      v-model:show="addLiquidity"
-      :assetsList="assetsList"
-      :talonAddress="talonAddress"
-      @updateList="getUserLiquidity"
-    ></add-liquidity>
   </div>
 </template>
 
