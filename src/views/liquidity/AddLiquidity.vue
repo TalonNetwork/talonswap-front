@@ -161,7 +161,7 @@ export default defineComponent({
       const fromAssetKey = state.fromAsset.assetKey;
       const toAssetKey = state.toAsset.assetKey;
       const key = refreshKey ? refreshKey : fromAssetKey + "_" + toAssetKey;
-      console.log(key, refreshKey, 969696333)
+      console.log(key, refreshKey, 969696333);
       if (fromAssetKey && toAssetKey) {
         if (state.storedSwapPairInfo[key] && !refreshKey) {
           // 如果存在切不需要刷新 则跳过
@@ -599,6 +599,11 @@ export default defineComponent({
   }
   .confirm-wrap {
     margin: 40px 0 20px;
+  }
+}
+@media screen and (max-width: 1200px) {
+  .add-liquidity {
+    padding: 15px;
   }
 }
 </style>

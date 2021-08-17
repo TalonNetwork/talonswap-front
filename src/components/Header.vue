@@ -395,7 +395,7 @@ export default defineComponent({
   color: white;
 }
 .switch_language {
-  color: #3A3C44;
+  color: #3a3c44;
   position: absolute;
   bottom: 100px;
   left: 20px;
@@ -406,7 +406,7 @@ export default defineComponent({
     min-width: 300px;
   }
 }
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 610px) {
   .header .account-wrap .asset-icon i {
     font-size: 20px;
   }
