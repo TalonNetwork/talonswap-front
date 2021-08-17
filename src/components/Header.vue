@@ -2,8 +2,8 @@
   <div class="w1300 header">
     <div class="left">
       <div class="logo" @click="toUrl('home')">
-        <img class="fl" src="./../assets/Talon.svg" />
-        <span class="fl">Talon</span>
+        <img class="fl" src="./../assets/Curium.png" />
+        <!-- <span class="fl">Talon</span> -->
       </div>
       <el-menu
         class="menu"
@@ -278,11 +278,11 @@ export default defineComponent({
     }
   }
   .logo {
-    width: 98px;
-    height: 28px;
+    width: 120px;
+    margin-bottom: 10px;
     cursor: pointer;
     img {
-      width: 30px;
+      width: 100px;
     }
     span {
       color: #ffffff;

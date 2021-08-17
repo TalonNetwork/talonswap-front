@@ -1,5 +1,9 @@
 <template>
-  <div class="w1300 liquidity">
+  <div
+    class="w1300 liquidity"
+    v-loading="loading"
+    element-loading-background="rgba(255, 255, 255, 0.8)"
+  >
     <div class="overview" v-if="!addLiquidity">
       <div class="top-part">
         <div class="title">
@@ -12,7 +16,12 @@
           </el-button>
         </div>
       </div>
-      <div class="your-liquidity" v-if="talonAddress">
+      <div
+        class="your-liquidity"
+        v-if="talonAddress"
+        v-loading="myLoading"
+        element-loading-background="rgba(255, 255, 255, 0.8)"
+      >
         <h3>{{ $t("liquidity.liquidity4") }}</h3>
         <div class="liquidity-list">
           <div v-for="(item, index) in liquidityList" :key="index">
@@ -21,14 +30,14 @@
                 <div class="img-wrap">
                   <symbol-icon
                     class="symbol1"
-                    :icon="item.fromSymbol"
+                    :icon="item.token0.symbol"
                   ></symbol-icon>
                   <symbol-icon
                     class="symbol2"
-                    :icon="item.toSymbol"
+                    :icon="item.token1.symbol"
                   ></symbol-icon>
                 </div>
-                <span>{{ item.symbol }}</span>
+                <span>{{ item.lpTokenAmount.token.symbol }}</span>
               </div>
               <div class="value">
                 <el-tooltip
@@ -51,7 +60,12 @@
               </div>
             </div>
             <collapse-transition>
-              <detail-bar v-show="item.showDetail"></detail-bar>
+              <detail-bar
+                v-show="item.showDetail"
+                :talonAddress="talonAddress"
+                :info="item"
+                @loading="handleLoadig"
+              ></detail-bar>
             </collapse-transition>
           </div>
           <div class="no-data" v-if="!liquidityList.length">No Data</div>
@@ -99,15 +113,19 @@ export default defineComponent({
     const state = reactive({
       addLiquidity: false,
       assetsList: [],
-      liquidityList: []
+      liquidityList: [],
+      myLoading: false,
+      loading: false
     });
     onMounted(async () => {
-      state.assetsList = await getAssetList(talonAddress.value);
       getUserLiquidity();
+      state.assetsList = await getAssetList(talonAddress.value);
     });
 
     async function getUserLiquidity() {
+      console.log(talonAddress.value, 99);
       if (talonAddress.value) {
+        state.myLoading = true;
         const res = await userLiquidityPage({
           userAddress: talonAddress.value
         });
@@ -115,11 +133,30 @@ export default defineComponent({
           const list = [];
           res.list.map(v => {
             const info = v.lpTokenAmount;
-            const amountSlice = divisionAndFix(info.amount, info.token.decimals, 2);
-            list.push({
+            const amountSlice = divisionAndFix(
+              info.amount,
+              info.token.decimals,
+              2
+            );
+            v.amountSlice = amountSlice;
+            v.amount = divisionAndFix(
+              info.amount,
+              info.token.decimals,
+              info.token.decimals
+            );
+            v.showDetail = false;
+
+            /* list.push({
+              fromToken: {
+                symbol: v.token0.symbol,
+                chainId: v.token0.assetChainId,
+                assetId: v.token0.assetId,
+                decimal: v.token0.decimals
+              },
               fromSymbol: v.token0.symbol,
               toSymbol: v.token1.symbol,
               symbol: info.token.symbol,
+              // fromKey: v.token0.
               amount: divisionAndFix(
                 info.amount,
                 info.token.decimals,
@@ -127,17 +164,22 @@ export default defineComponent({
               ),
               amountSlice: amountSlice == 0 ? "0.00" : amountSlice,
               showDetail: false
-            });
+            }); */
           });
-          state.liquidityList = list;
+          state.liquidityList = res.list;
         }
+        state.myLoading = false;
       }
     }
 
     function toggleDetail(item) {
       item.showDetail = !item.showDetail;
     }
-    return { talonAddress, ...toRefs(state), toggleDetail };
+
+    function handleLoadig(loading) {
+      state.loading = loading;
+    }
+    return { talonAddress, ...toRefs(state), toggleDetail, handleLoadig };
   }
 });
 </script>

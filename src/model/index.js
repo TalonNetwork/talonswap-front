@@ -261,3 +261,28 @@ export async function userLiquidityPage(data) {
   });
   return res;
 }
+
+/**
+ * liquidity 查询移除swap流动性的最小资产数量
+ * data: {
+ *  amountLP
+ *  tokenAStr
+ *  tokenBStr
+ * }
+ */
+export async function calMinAmountOnSwapRemoveLiquidity(data) {
+  const channel = "calMinAmountOnSwapRemoveLiquidity";
+  const params = {
+    method: channel,
+    params: data
+  };
+  const res = await listen({
+    url,
+    channel,
+    params: {
+      cmd: true,
+      channel: "cmd:" + JSON.stringify(params)
+    }
+  });
+  return res;
+}
