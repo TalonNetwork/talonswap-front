@@ -10,13 +10,13 @@ const messages = {
   [zhLocale.name]: {
     // zh-cn
     el: zhLocale.el,
-    ...cn,
+    ...cn
   },
   [enLocale.name]: {
     // en
     el: enLocale.el,
-    ...en,
-  },
+    ...en
+  }
 };
 const navigatorLang = window.navigator.language === "zh-CN" ? "zh-cn" : "en";
 const fallLang = enLocale.name;
@@ -24,9 +24,9 @@ const lang = localStorage.getItem("lang") || navigatorLang;
 localStorage.setItem("lang", lang);
 
 const i18n = createI18n({
-  locale: lang, // 默认
+  locale: zhLocale.name, // 默认
   fallbackLocale: fallLang, // 没有默认语言时重置为fallLang
-  messages,
+  messages
 });
 
 // 设置element语言和国际化
@@ -34,7 +34,7 @@ const i18n = createI18n({
 // console.log(ElementLocale, 66)
 // console.log(i18n.global.t, 656)
 // Ei18n(i18n.global.t);
-
+export { i18n };
 export function useI18n(app: App) {
   app.use(i18n);
 }

@@ -32,5 +32,6 @@ export default {
   background-size: cover;
   background-image: url("assets/img/bg.jpg");
   padding-bottom: 60px;
+  word-break: break-all;
 }
 </style>

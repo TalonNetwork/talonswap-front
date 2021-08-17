@@ -339,7 +339,8 @@ export default defineComponent({
 
 <style lang="scss">
 .create-farm {
-  width: 470px;
+  max-width: 470px;
+  width: 100%;
   margin: 0 auto;
   border-radius: 20px;
   padding: 40px;

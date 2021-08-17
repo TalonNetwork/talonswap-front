@@ -10,13 +10,17 @@
   },
   "dependencies": {
     "@rongcloud/imlib-v4": "^4.4.4",
+    "amfe-flexible": "^2.2.1",
     "axios": "^0.21.1",
     "bignumber.js": "^9.0.1",
     "copy-to-clipboard": "^3.3.1",
     "element-plus": "^1.0.2-beta.70",
     "ethers": "4",
+    "lib-flexible": "^0.3.2",
     "nerve-sdk-js": "^1.0.8",
+    "normalize.css": "^8.0.1",
     "path": "^0.12.7",
+    "postcss-px2rem-exclude": "^0.0.6",
     "sass": "^1.32.12",
     "vue": "^3.0.5",
     "vue-i18n": "^9.1.6",
@@ -43,14 +47,7 @@
     "node-sass": "^4.12.0",
     "prettier": "^2.2.1",
     "sass-loader": "^8.0.2",
-    "typescript": "~4.1.5"
-  },
-  "gitHooks": {
-    "pre-commit": "lint-staged"
-  },
-  "lint-staged": {
-    "*.{vue,js,ts}": [
-      "vue-cli-service lint"
-    ]
+    "typescript": "~4.1.5",
+    "postcss-loader": "^3.0.0"
   }
 }

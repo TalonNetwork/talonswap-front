@@ -216,7 +216,8 @@ export default {
     }
   }
   :deep(.select-assets-dialog) {
-    width: 450px !important;
+    //max-width: 450px !important;
+    //min-width: 360px !important;
     .el-input {
       .el-input__inner {
         border-radius: 10px;

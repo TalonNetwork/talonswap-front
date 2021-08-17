@@ -27,9 +27,46 @@
       </div>
       <i class="iconfont icon-tianjia" @click="showAssetManage = true"></i>
     </div>
+    <div class="assets-list" v-loading="loading">
+      <template v-if="tableData && tableData.length !== 0">
+        <div class="asset-item" v-for="(item, index) in tableData" :key="index">
+          <span class="assets_symbol">{{ item.symbol }}</span>
+          <div class="asset-info">
+          <span>
+            {{ $t("public.public2") }}：{{ item.number }}≈${{ item.valuation }}
+          </span>
+            <span>{{ $t("public.public3") }}：{{ item.available }}</span>
+            <span>{{ $t("public.public4") }}：{{ item.locking }}</span>
+          </div>
+          <div class="option_btn">
+            <el-dropdown>
+            <span class="el-dropdown-link">
+              {{ $t("public.public5") }}
+              <i class="el-icon-arrow-down el-icon--right"></i>
+            </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="transfer(item, 'crossIn')">
+                    {{ $t("assets.assets4") }}
+                  </el-dropdown-item>
+                  <el-dropdown-item @click="transfer(item, 'general')">
+                    {{ $t("assets.assets5") }}
+                  </el-dropdown-item>
+                  <el-dropdown-item @click="transfer(item, 'withdrawal')">
+                    {{ $t("assets.assets6") }}
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </div>
+      </template>
+      <el-empty description="No Data" v-if="!tableData.length"></el-empty>
+    </div>
     <el-table
       :data="tableData"
       height="480"
+      class="show_table"
       v-loading="loading"
       element-loading-background="rgba(255, 255, 255, 0.8)"
     >
@@ -329,6 +366,51 @@ export default defineComponent({
     .ydy {
       color: #7e87c2;
     }
+  }
+}
+.assets-list {
+  display: none;
+  .asset-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    .assets_symbol {
+      width: 100px;
+    }
+    .asset-info {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+  }
+}
+@media screen and (max-width: 1200px) {
+  .show_table {
+    display: none;
+  }
+  .assets-list {
+    display: block;
+  }
+  .assets {
+    padding: 20px;
+    border-radius: 20px !important;
+  }
+  .assets .top .top-title {
+    font-size: 18px;
+  }
+  .assets .font_20 {
+    font-size: 16px;
+  }
+  .assets .address-wrap {
+    font-size: 16px !important;
+    i {
+      font-size: 20px;
+    }
+  }
+  .transfer-page .bottom {
+    padding: 25px;
   }
 }
 </style>

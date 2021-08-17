@@ -5,7 +5,7 @@
     element-loading-background="rgba(255, 255, 255, 0.8)"
   >
     <el-empty description="No Data" v-if="!list.length"></el-empty>
-    <template v-else>
+    <template v-if="true">
       <div class="lis" v-for="(item, index) of list" :key="index">
         <div class="title">
           <farm-symbol :name="item.name"></farm-symbol>
@@ -45,6 +45,48 @@
         </collapse-transition>
       </div>
     </template>
+    <div class="mobile-item">
+      <div v-for="(item, index) in list" :key="index">
+        <div class="farm-item_mobile">
+          <span class="mr-2">{{ item.name }}</span>
+          <div class="farm-info">
+            <div class="mb_10">
+              <span class="info-title">{{ $t("farm.farm2") }}:</span>
+              <span>{{ item.pendingReward }} {{ item.syrupTokenSymbol }}</span>
+            </div>
+            <div class="mb_10">
+              <span class="info-title">{{ $t("farm.farm3") }}:</span>
+              <span>{{ item.apr }}%</span>
+            </div>
+            <div class="mb_10">
+              <span class="info-title">{{ $t("farm.farm4") }}:</span>
+              <span>${{ item.tatalStakeTokenUSD }}</span>
+            </div>
+            <div class="mb_10">
+              <span class="info-title">{{ $t("farm.farm5") }}:</span>
+              <span>
+                {{ item.syrupTokenBalance }} {{ item.syrupTokenSymbol }}
+              </span>
+            </div>
+          </div>
+          <div class="link view" @click="showId(item.farmHash)">
+            详情
+            <i
+              :class="{ 'el-icon-arrow-right': true, expand: item.showDetail }"
+            ></i>
+          </div>
+        </div>
+        <collapse-transition>
+          <DetailsBar
+            :tokenInfo="item"
+            :isTalon="isTalon"
+            :talonAddress="talonAddress"
+            v-show="item.showDetail"
+            @loading="handleLoading"
+          ></DetailsBar>
+        </collapse-transition>
+      </div>
+    </div>
     <div class="more" v-if="isTalon && talonAddress">
       <span class="link" @click="createFarm">{{ $t("farm.farm11") }}</span>
     </div>
@@ -158,11 +200,60 @@ export default defineComponent({
       }
     }
   }
+  .farm-item_mobile {
+    display: none;
+  }
   .more {
     position: absolute;
     width: 100%;
     text-align: center;
     bottom: 20px;
+  }
+}
+.mobile-item {
+  display: none;
+  padding: 10px;
+  font-size: 14px;
+  .farm-item_mobile {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    .farm-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      .info-title {
+        //width: 50px;
+        margin-bottom: 10px;
+        text-align: right;
+      }
+    }
+    .mr-2 {
+      margin-right: 20px;
+      width: 50px;
+      font-weight: bold;
+    }
+    .mb_10 {
+      margin-bottom: 10px;
+    }
+  }
+}
+@media screen and (max-width: 1200px) {
+  .farm-item .lis {
+    font-size: 20px !important;
+  }
+}
+@media screen and (max-width: 800px) {
+  .lis {
+    display: none !important;
+  }
+  .mobile-item {
+    display: block;
+  }
+  .farm-item {
+    padding: 15px;
   }
 }
 </style>

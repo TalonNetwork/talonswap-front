@@ -54,7 +54,7 @@
               type="primary"
               size="small"
               icon="el-icon-minus"
-              :disabled="!!!Number(tokenInfo.stakeAmount)|| !talonAddress"
+              :disabled="!!!Number(tokenInfo.stakeAmount) || !talonAddress"
               @click="handleLP('minus')"
             ></el-button>
             <el-button
@@ -465,6 +465,54 @@ export default defineComponent({
   }
   .el-overlay {
     z-index: 1888 !important;
+  }
+}
+@media screen and (max-width: 1200px) {
+  .gain {
+    margin-left: 0;
+    margin-top: 20px;
+    width: 264px;
+  }
+  .alter {
+    margin-left: 0;
+    margin-top: 20px;
+    width: 264px;
+  }
+  .info-title {
+    width: 80px;
+  }
+}
+@media screen and (max-width: 850px) {
+  .farm-details {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: space-between;
+    .biaoge {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-direction: column;
+      .gain {
+        margin-left: 0;
+        margin-top: 20px;
+        width: 280px;
+      }
+      .alter {
+        margin-left: 0;
+        margin-top: 20px;
+        width: 280px;
+        //.right {
+        //  width: 180px !important;
+        //}
+        .btns {
+          margin-bottom: 10px;
+        }
+      }
+    }
+  }
+  .farm-item .more {
+    margin-top: 15px;
   }
 }
 </style>

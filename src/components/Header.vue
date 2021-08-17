@@ -21,6 +21,9 @@
         <!-- <el-menu-item index="info">Info</el-menu-item> -->
         <!-- <el-menu-item index="test">Test</el-menu-item> -->
       </el-menu>
+      <div class="mobile-menu" @click="showMenu = !showMenu">
+        <i class="iconfont icon-zhankai"></i>
+      </div>
     </div>
     <div class="account-wrap">
       <div class="asset-icon" v-if="address">
@@ -86,6 +89,28 @@
         </div>
       </div>
     </el-dialog>
+    <el-drawer
+      title="我是标题"
+      v-model="showMenu"
+      custom-class="drawer-class"
+      modal-class="modal_class"
+      direction="ltr"
+      :with-header="false"
+    >
+      <el-menu
+        class="menu"
+        @select="handleSelect"
+        :default-active="activeIndex"
+        active-text-color="#3171f5"
+      >
+        <el-menu-item index="trading">{{ $t("header.header1") }}</el-menu-item>
+        <el-menu-item index="liquidity">
+          {{ $t("header.header2") }}
+        </el-menu-item>
+        <el-menu-item index="farm">Farm</el-menu-item>
+      </el-menu>
+      <div class="switch_language" @click="switchLang">{{ lang }}</div>
+    </el-drawer>
   </div>
 </template>
 
@@ -137,6 +162,7 @@ export default defineComponent({
       }
     );
     // console.log(address, 456);
+    const showMenu = ref(false);
     const manageAccount = ref(false);
     const showConnect = computed(() => store.state.showConnect);
     function showConnectDialog(state: boolean) {
@@ -185,7 +211,8 @@ export default defineComponent({
       toAsset,
       lang,
       switchLang,
-      openUrl
+      openUrl,
+      showMenu
     };
   },
   data() {
@@ -198,6 +225,7 @@ export default defineComponent({
   methods: {
     handleSelect(key: string) {
       this.toUrl(key);
+      this.showMenu = false;
     },
 
     superLong(str: string, len = 9) {
@@ -227,6 +255,7 @@ export default defineComponent({
     display: flex;
     align-items: center;
     .menu {
+      display: block;
       flex: 1;
       background-color: #3a4be1;
       border-bottom: 0;
@@ -295,7 +324,7 @@ export default defineComponent({
     }
   }
   .connect-dialog {
-    width: 470px !important;
+    max-width: 470px !important;
     .el-dialog__body {
       padding: 0;
       .list {
@@ -323,7 +352,7 @@ export default defineComponent({
     }
   }
   .account-manage {
-    width: 470px !important;
+    max-width: 470px;
     .el-dialog__header {
       text-align: center;
     }
@@ -353,6 +382,50 @@ export default defineComponent({
         }
       }
     }
+  }
+}
+
+.modal_class {
+  top: 80px !important;
+}
+.mobile-menu {
+  display: none;
+  height: 20px;
+  width: 20px;
+  color: white;
+}
+.switch_language {
+  color: #3A3C44;
+  position: absolute;
+  bottom: 100px;
+  left: 20px;
+}
+@media screen and (max-width: 1200px) {
+  .header .account-manage {
+    max-width: 470px !important;
+    min-width: 300px;
+  }
+}
+@media screen and (max-width: 600px) {
+  .header .account-wrap .asset-icon i {
+    font-size: 20px;
+  }
+  .mobile-menu {
+    display: block;
+    margin-right: 20px;
+  }
+  .header .left .menu {
+    display: none;
+  }
+  .language {
+    display: none;
+  }
+}
+@media screen and (max-width: 375px) {
+  .header .account {
+    width: 90px;
+    height: 30px;
+    line-height: 30px;
   }
 }
 </style>

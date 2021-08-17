@@ -96,7 +96,7 @@ export default defineComponent({
 
 <style lang="scss">
 .transfer-page {
-  width: 470px;
+  max-width: 470px;
   margin: 0 auto;
   border-radius: 20px;
   background-color: #5b6fff;

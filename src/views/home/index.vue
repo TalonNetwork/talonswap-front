@@ -5,7 +5,7 @@
     </div>
     <div class="info-top pd_40">
       <div class="title">{{ $t("home.home2") }}</div>
-      <div class="info-wrap flex-center">
+      <div class="flex-center info-wrap">
         <div class="info-item">
           <p class="label">{{ $t("home.home3") }}</p>
           <p class="value">${{ overviewData.priceUSD }}</p>
@@ -48,6 +48,48 @@
             <span class="icon-wrap">
               <i class="iconfont icon-dailingjiangli"></i>
             </span>
+          </div>
+        </div>
+        <div class="right_block pd_40">
+          <div class="title">
+            Farm
+            <span class="more" @click="toUrl">
+              {{ $t("home.home9") }}
+              <i class="el-icon-arrow-right"></i>
+            </span>
+          </div>
+          <div class="farm-list">
+            <div
+              class="farm-item"
+              v-for="item in farmList"
+              :key="item.farmHash"
+            >
+              <div class="coin_name">
+                {{ item.name }}
+              </div>
+              <!--              <farm-symbol-->
+              <!--                class="farm-symbol"-->
+              <!--                :imgList="item.logoList"-->
+              <!--                :name="item.name"-->
+              <!--              ></farm-symbol>-->
+              <div class="farm-info">
+                <div>
+                  <div class="label">APR</div>
+                  <p class="value">{{ item.apr }}%</p>
+                </div>
+                <div>
+                  <div class="label">{{ $t("home.home10") }}</div>
+                  <p class="value">{{ item.syrupTokenSymbol }}</p>
+                </div>
+              </div>
+              <div
+                class="handle click"
+                @click="addLP(item)"
+                v-if="talonAddress"
+              >
+                {{ $t("home.home11") }}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -454,6 +496,165 @@ export default {
     .value {
       line-height: 1;
       margin-top: 10px;
+    }
+  }
+}
+.info-wrap {
+  align-items: normal;
+}
+.right_block {
+  display: none;
+  flex: 1;
+  height: 394px;
+  overflow: hidden;
+  .title {
+    position: relative;
+    .more {
+      position: absolute;
+      right: 0;
+      top: 0;
+      color: #4a5ef2;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 400;
+    }
+  }
+  .farm-list {
+    height: 240px;
+    overflow: auto;
+  }
+  .farm-item {
+    margin-top: 32px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    &:first-child {
+      margin-top: 0;
+    }
+    .farm-symbol {
+      width: 285px;
+    }
+    .farm-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      & > div {
+        flex: 1;
+      }
+      .label {
+        font-size: 14px;
+      }
+      .value {
+        font-size: 18px;
+        font-weight: 600;
+      }
+    }
+    .handle {
+      color: #4a5ef2;
+      margin-right: 20px;
+    }
+  }
+}
+@media screen and (max-width: 1200px) {
+  .w1300 {
+    //max-width: 1920px;
+    height: auto;
+    margin: 0;
+    width: 100%;
+    padding: 20px 20px 30px 20px;
+  }
+  .home .info-middle .right {
+    height: 500px;
+    display: none;
+  }
+  .home .info-middle .left {
+    margin-right: 0 !important;
+    width: 100% !important;
+    .left-bottom {
+      margin-bottom: 40px !important;
+    }
+  }
+  .right_block {
+    display: block !important;
+    width: 100% !important;
+    padding: 20px !important;
+  }
+  .pd_40_rd_20 {
+    padding: 24px;
+  }
+  .coin_name {
+    font-size: 14px;
+    font-weight: bold;
+    width: 180px;
+  }
+  .home .value {
+    font-size: 20px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .home .overview-total {
+    font-size: 20px !important;
+  }
+  .home .info-top {
+    height: auto !important;
+  }
+  .home .info-middle .right {
+    height: 500px;
+    display: none;
+  }
+  .coin_name {
+    font-size: 14px;
+    font-weight: bold;
+    width: 80px;
+  }
+  .info-wrap {
+    display: flex;
+    flex-direction: column;
+    .info-item {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+      .label {
+        width: 65px;
+        font-size: 14px;
+      }
+      .value {
+        font-size: 16px !important;
+      }
+    }
+    .home .pd_40 {
+      padding: 20px !important;
+    }
+  }
+  .right_block {
+    display: block;
+    font-size: 14px;
+  }
+  .right_block .farm-item .farm-info .value {
+    font-size: 14px;
+  }
+  .home .title {
+    font-size: 17px;
+  }
+  .info-bottom {
+    padding: 24px !important;
+  }
+}
+@media screen and (max-width: 650px) {
+  .home .info-middle .left .left-top {
+    div {
+      p {
+        font-size: 20px !important;
+      }
+    }
+  }
+  .home .info-middle .left .left-bottom {
+    div {
+      p {
+        font-size: 20px !important;
+      }
     }
   }
 }

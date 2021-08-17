@@ -35,6 +35,14 @@
         {{ $t("public.public9") }}
       </el-button>
     </div>
+    <div class="dialog-footer_mobile">
+      <el-button @click="close">
+        {{ $t("public.public8") }}
+      </el-button>
+      <el-button type="primary" @click="confirm">
+        {{ $t("public.public9") }}
+      </el-button>
+    </div>
   </el-dialog>
 </template>
 
@@ -146,7 +154,7 @@ export default {
 </script>
 <style lang="scss">
 .add-assets-dialog {
-  width: 470px !important;
+  max-width: 470px !important;
   .el-input {
     .el-input__inner {
       border-radius: 10px;
@@ -199,6 +207,7 @@ export default {
     }
   }
   .footer-wrap {
+    display: block;
     padding-top: 60px;
     .el-button {
       width: 185px;
@@ -209,11 +218,31 @@ export default {
     }
   }
 
+  .dialog-footer_mobile {
+    display: none;
+  }
+
+  @media screen and (max-width: 470px) {
+    .footer-wrap {
+      display: none !important;
+    }
+    .dialog-footer_mobile {
+      margin-top: 20px !important;
+      display: flex !important;
+      align-items: center;
+      justify-content: space-around;
+      .el-button_mobile {
+        max-width: 85px;
+        width: 100%;
+      }
+    }
+  }
+
   @media screen and (max-width: 1200px) {
     .list-wrap {
       li {
         .asset-base-info {
-          width: 2rem;
+          //width: 2rem;
         }
         .el-checkbox {
           margin-right: 0;

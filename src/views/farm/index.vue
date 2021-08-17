@@ -967,7 +967,8 @@ export default defineComponent({
   background: #5f71f5 !important;
   border: 0 !important;
   border-radius: 10px;
-  .el-select-dropdown__item.hover, .el-select-dropdown__item:hover {
+  .el-select-dropdown__item.hover,
+  .el-select-dropdown__item:hover {
     background: #5f71f5;
   }
   .el-select-dropdown__item {
@@ -981,6 +982,14 @@ export default defineComponent({
   .el-popper__arrow:before {
     background: #5f71f5;
     border: 0 !important;
+  }
+}
+@media screen and (max-width: 800px) {
+  .farm .top {
+    width: 300px;
+    .tab-item {
+      width: 150px;
+    }
   }
 }
 </style>

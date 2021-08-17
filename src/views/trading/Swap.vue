@@ -1,6 +1,6 @@
 <template>
   <div
-    class="swap pd_40_rd_20"
+    class="swap pd_40_rd_20 mobile-p"
     v-loading="loading"
     element-loading-background="rgba(255, 255, 255, 0.8)"
   >
@@ -780,6 +780,20 @@ export default defineComponent({
   }
   100% {
     height: 245px;
+  }
+}
+@media screen and (max-width: 1200px) {
+  .mobile-p {
+    padding: 20px !important;
+  }
+  .w1300 {
+    margin: 10px !important;
+  }
+  ::v-deep .el-dialog {
+    margin: 15vh auto;
+    width: 100% !important;
+    max-width: 470px !important;
+    min-width: 310px !important;
   }
 }
 </style>

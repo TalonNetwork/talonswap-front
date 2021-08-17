@@ -224,7 +224,8 @@ a.line {
 }
 
 .w1300 {
-  width: 1300px;
+  max-width: 1300px;
+  //min-width: 375px;
   margin: 0 auto;
 }
 
