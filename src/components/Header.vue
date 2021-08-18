@@ -63,34 +63,35 @@
         </div>
       </div>
     </el-dialog>
-    <el-dialog
-      :title="$t('public.public6')"
-      custom-class="account-manage"
-      :show-close="false"
-      v-model="manageAccount"
-    >
-      <div class="content">
-        <div class="top">
-          <span>{{ superLong(address, 9) }}</span>
-          <span @click="$copy(address)">
-            <i class="iconfont icon-fuzhi"></i>
-          </span>
-          <span @click="openUrl">
-            <i
-              class="iconfont icon-tiaozhuanlianjie"
-              style="font-size: 29px"
-            ></i>
-          </span>
+    <div class="custom-overlay">
+      <el-dialog
+        :title="$t('public.public6')"
+        custom-class="account-manage"
+        :show-close="false"
+        v-model="manageAccount"
+      >
+        <div class="content">
+          <div class="top">
+            <span>{{ superLong(address, 9) }}</span>
+            <span @click="$copy(address)">
+              <i class="iconfont icon-fuzhi"></i>
+            </span>
+            <span @click="openUrl">
+              <i
+                class="iconfont icon-tiaozhuanlianjie"
+                style="font-size: 29px"
+              ></i>
+            </span>
+          </div>
+          <div class="bottom tc">
+            <el-button type="primary" @click="disconnectProvider">
+              {{ $t("public.public7") }}
+            </el-button>
+          </div>
         </div>
-        <div class="bottom tc">
-          <el-button type="primary" @click="disconnectProvider">
-            {{ $t("public.public7") }}
-          </el-button>
-        </div>
-      </div>
-    </el-dialog>
+      </el-dialog>
+    </div>
     <el-drawer
-      title="我是标题"
       v-model="showMenu"
       custom-class="drawer-class"
       modal-class="modal_class"
@@ -400,10 +401,34 @@ export default defineComponent({
   bottom: 100px;
   left: 20px;
 }
+.el-popup-parent--hidden {
+  padding: 0 !important;
+}
 @media screen and (max-width: 1200px) {
+  .custom-overlay {
+    .el-overlay {
+      padding: 20px !important;
+      .el-dialog {
+        margin: 15vh auto;
+        width: 100% !important;
+        max-width: 470px !important;
+        min-width: 280px !important;
+        .el-dialog__body {
+          padding-left: 20px !important;
+          padding-right: 20px !important;
+        }
+      }
+    }
+  }
   .header .account-manage {
     max-width: 470px !important;
     min-width: 300px;
+    .content .top span {
+      font-size: 22px;
+      i {
+        font-size: 28px;
+      }
+    }
   }
   .w1300 {
     //max-width: 1920px;
@@ -433,6 +458,7 @@ export default defineComponent({
     width: 90px;
     height: 30px;
     line-height: 30px;
+    margin-left: 20px;
   }
 }
 </style>

@@ -188,6 +188,7 @@ export default defineComponent({
 
 <style lang="scss">
 .liquidity {
+  overflow: hidden;
   max-width: 470px;
   margin: 0 auto;
   border-radius: 20px;

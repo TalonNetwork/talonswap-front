@@ -789,11 +789,18 @@ export default defineComponent({
   .w1300 {
     margin: 10px !important;
   }
+  ::v-deep .el-overlay {
+    padding: 20px !important;
+  }
   ::v-deep .el-dialog {
     margin: 15vh auto;
     width: 100% !important;
     max-width: 470px !important;
-    min-width: 310px !important;
+    min-width: 280px !important;
+    .el-dialog__body {
+      padding-left: 20px !important;
+      padding-right: 20px !important;
+    }
   }
 }
 </style>

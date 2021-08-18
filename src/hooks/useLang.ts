@@ -1,5 +1,6 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import store from "@/store";
 
 export default function useLang() {
   const { locale } = useI18n();
@@ -9,9 +10,10 @@ export default function useLang() {
   function switchLang() {
     locale.value = lang.value === "EN" ? "en" : "zh-cn";
     localStorage.setItem("lang", locale.value);
+    store.commit("switchLang", locale.value);
   }
   return {
     lang,
     switchLang
   };
-};
+}

@@ -9,6 +9,7 @@ export interface State {
   addressInfo: any;
   chainId: string;
   showConnect: boolean;
+  lang: string | null;
 }
 
 // 定义注入类型
@@ -19,36 +20,37 @@ export default createStore<State>({
     // hasTalonAddress: false,
     addressInfo: {},
     chainId: "",
-    showConnect: false
+    showConnect: false,
+    lang: localStorage.getItem("lang")
   },
   getters: {
     // 异构链名称Ethereum..
     chain(state) {
       const chainId = state.chainId;
       if (!chainId) return "";
-      let chain = ""
+      let chain = "";
       Object.keys(_networkInfo).map(v => {
         if (_networkInfo[v][config.ETHNET] === chainId) {
-          chain = _networkInfo[v].name
+          chain = _networkInfo[v].name;
         }
-      })
+      });
       return chain;
     },
     // metamask 网络错误
     wrongChain(state) {
       const chainId = state.chainId;
       return Object.keys(_networkInfo).every(v => {
-        return _networkInfo[v][config.ETHNET] !== chainId
-      })
+        return _networkInfo[v][config.ETHNET] !== chainId;
+      });
     },
     currentAddress(state) {
       const address = state.addressInfo?.address?.Ethereum;
-      return address
+      return address;
     },
     talonAddress(state) {
       const address = state.addressInfo?.address?.Talon;
-      return address
-    }
+      return address;
+    },
   },
   mutations: {
     setCurrentAddress(state, data) {
@@ -60,7 +62,11 @@ export default createStore<State>({
       state.chainId = data;
     },
     changeConnectShow(state, data) {
-      state.showConnect = data
+      state.showConnect = data;
+    },
+    switchLang(state, data) {
+      state.lang = data;
+      localStorage.setItem("lang", data);
     }
   },
   actions: {

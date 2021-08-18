@@ -1,85 +1,87 @@
 <template>
-  <div
-    class="create-farm"
-    v-loading="loading"
-    element-loading-background="rgba(255, 255, 255, 0.8)"
-  >
-    <div class="head">
-      <div class="back"><i class="el-icon-back" @click="back"></i></div>
-      <h3>{{ $t("farm.farm12") }}</h3>
+  <div class="w1300">
+    <div
+        class="create-farm"
+        v-loading="loading"
+        element-loading-background="rgba(255, 255, 255, 0.8)"
+    >
+      <div class="head">
+        <div class="back"><i class="el-icon-back" @click="back"></i></div>
+        <h3>{{ $t("farm.farm12") }}</h3>
+      </div>
+      <el-form label-position="top" :model="model" :rules="rules" ref="form">
+        <el-form-item :label="$t('farm.farm13')" prop="tokenA">
+          <el-select
+              v-model="model.tokenA"
+              filterable
+              :placeholder="$t('createFarm.createFarm1')"
+          >
+            <el-option
+                :label="item.symbol + '(' + item.assetKey + ')'"
+                :value="item.assetKey"
+                v-for="item in assetList"
+                :key="item.assetKey"
+                :disabled="item.assetKey === model.tokenB"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="$t('farm.farm14')" prop="lockedTime">
+          <el-date-picker
+              :placeholder="$t('createFarm.createFarm2')"
+              v-model="model.lockedTime"
+              type="datetime"
+              :disabledDate="disableTime"
+          ></el-date-picker>
+        </el-form-item>
+        <el-form-item :label="$t('farm.farm15')" prop="tokenB">
+          <el-select
+              v-model="model.tokenB"
+              filterable
+              :placeholder="$t('createFarm.createFarm3')"
+          >
+            <el-option
+                :label="item.symbol + '(' + item.assetKey + ')'"
+                :value="item.assetKey"
+                v-for="item in assetList"
+                :key="item.assetKey"
+                :disabled="item.assetKey === model.tokenA"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="$t('farm.farm16')" prop="syrupPerDay">
+          <el-input
+              v-model="model.syrupPerDay"
+              :placeholder="$t('createFarm.createFarm4')"
+          ></el-input>
+        </el-form-item>
+        <div class="balance">{{ $t("public.public12") }}{{ balance }}</div>
+        <el-form-item :label="$t('farm.farm17')" prop="syrupTotalAmount">
+          <el-input
+              v-model="model.syrupTotalAmount"
+              :placeholder="$t('createFarm.createFarm5')"
+          ></el-input>
+        </el-form-item>
+        <el-form-item :label="$t('farm.farm22')" prop="startTime">
+          <el-date-picker
+              :placeholder="$t('createFarm.createFarm6')"
+              v-model="model.startTime"
+              type="datetime"
+              :disabledDate="disableTime"
+          ></el-date-picker>
+        </el-form-item>
+        <el-form-item class="checkbox-item" prop="check">
+          <el-checkbox
+              :label="$t('farm.farm18')"
+              v-model="model.check"
+          ></el-checkbox>
+        </el-form-item>
+        <el-form-item class="confirm-wrap">
+          <el-button type="primary" @click="submitForm">
+            {{ $t("farm.farm19") }}
+          </el-button>
+        </el-form-item>
+      </el-form>
     </div>
-    <el-form label-position="top" :model="model" :rules="rules" ref="form">
-      <el-form-item :label="$t('farm.farm13')" prop="tokenA">
-        <el-select
-          v-model="model.tokenA"
-          filterable
-          :placeholder="$t('createFarm.createFarm1')"
-        >
-          <el-option
-            :label="item.symbol + '(' + item.assetKey + ')'"
-            :value="item.assetKey"
-            v-for="item in assetList"
-            :key="item.assetKey"
-            :disabled="item.assetKey === model.tokenB"
-          ></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item :label="$t('farm.farm14')" prop="lockedTime">
-        <el-date-picker
-          :placeholder="$t('createFarm.createFarm2')"
-          v-model="model.lockedTime"
-          type="datetime"
-          :disabledDate="disableTime"
-        ></el-date-picker>
-      </el-form-item>
-      <el-form-item :label="$t('farm.farm15')" prop="tokenB">
-        <el-select
-          v-model="model.tokenB"
-          filterable
-          :placeholder="$t('createFarm.createFarm3')"
-        >
-          <el-option
-            :label="item.symbol + '(' + item.assetKey + ')'"
-            :value="item.assetKey"
-            v-for="item in assetList"
-            :key="item.assetKey"
-            :disabled="item.assetKey === model.tokenA"
-          ></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item :label="$t('farm.farm16')" prop="syrupPerDay">
-        <el-input
-          v-model="model.syrupPerDay"
-          :placeholder="$t('createFarm.createFarm4')"
-        ></el-input>
-      </el-form-item>
-      <div class="balance">{{ $t("public.public12") }}{{ balance }}</div>
-      <el-form-item :label="$t('farm.farm17')" prop="syrupTotalAmount">
-        <el-input
-          v-model="model.syrupTotalAmount"
-          :placeholder="$t('createFarm.createFarm5')"
-        ></el-input>
-      </el-form-item>
-      <el-form-item :label="$t('farm.farm22')" prop="startTime">
-        <el-date-picker
-          :placeholder="$t('createFarm.createFarm6')"
-          v-model="model.startTime"
-          type="datetime"
-          :disabledDate="disableTime"
-        ></el-date-picker>
-      </el-form-item>
-      <el-form-item class="checkbox-item" prop="check">
-        <el-checkbox
-          :label="$t('farm.farm18')"
-          v-model="model.check"
-        ></el-checkbox>
-      </el-form-item>
-      <el-form-item class="confirm-wrap">
-        <el-button type="primary" @click="submitForm">
-          {{ $t("farm.farm19") }}
-        </el-button>
-      </el-form-item>
-    </el-form>
   </div>
 </template>
 
@@ -408,6 +410,11 @@ export default defineComponent({
     .confirm-wrap {
       margin-top: 30px;
     }
+  }
+}
+@media screen and (max-width: 1200px) {
+  .create-farm {
+    padding: 25px;
   }
 }
 </style>
