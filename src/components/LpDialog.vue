@@ -236,7 +236,7 @@ export default defineComponent({
     //margin: 15vh auto;
     width: 100% !important;
     max-width: 470px !important;
-    min-width: 310px !important;
+    min-width: 280px !important;
     .infos {
       width: 100% !important;
       max-width: 417px !important;

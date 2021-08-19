@@ -44,13 +44,17 @@
           :key="item.assetKey"
           @click="changeSelect(item)"
         >
-          <div class="flex-center">
+          <div class="flex-center flex-1">
             <symbol-icon :icon="item.symbol"></symbol-icon>
             <div class="asset-base-info">
               <div>
                 {{ item.symbol }}
               </div>
               <span>ID: {{ item.assetKey }}</span>
+            </div>
+            <div class="asset-price">
+              <span>{{ item.available }}</span>
+              <span>≈{{ item.usdPrice }}</span>
             </div>
           </div>
         </li>
@@ -242,6 +246,7 @@ export default {
           margin-right: 15px;
         }
         .asset-base-info {
+          flex: 1;
           div {
             font-size: 18px;
             font-weight: 600;
@@ -251,8 +256,25 @@ export default {
             color: #7e87c2;
           }
         }
+        .asset-price {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          text-align: right;
+          span:nth-child(1) {
+            text-align: right;
+            font-size: 20px;
+            font-weight: bold;
+          }
+        }
       }
     }
+  }
+}
+
+@media screen and (max-width: 1200px) {
+  ::v-deep .el-overlay {
+    padding: 20px;
   }
 }
 </style>

@@ -1,49 +1,51 @@
 <template>
-  <el-dialog
-    custom-class="add-assets-dialog"
-    :title="$t('assets.assets7')"
-    :show-close="false"
-    top="10vh"
-    v-model="show"
-    @closed="close"
-  >
-    <el-input
-      v-model="searchVal"
-      :placeholder="$t('assets.assets8')"
-    ></el-input>
-    <ul class="list-wrap">
-      <li
-        v-for="item in list"
-        :key="item.assetKey"
-        @click="changeSelect(item.assetKey)"
-      >
-        <div class="flex-center">
-          <symbol-icon :icon="item.symbol"></symbol-icon>
-          <div class="asset-base-info">
-            <div>
-              {{ item.symbol }}
+  <div class="custom-overlay">
+    <el-dialog
+        custom-class="add-assets-dialog"
+        :title="$t('assets.assets7')"
+        :show-close="false"
+        top="10vh"
+        v-model="show"
+        @closed="close"
+    >
+      <el-input
+          v-model="searchVal"
+          :placeholder="$t('assets.assets8')"
+      ></el-input>
+      <ul class="list-wrap">
+        <li
+            v-for="item in list"
+            :key="item.assetKey"
+            @click="changeSelect(item.assetKey)"
+        >
+          <div class="flex-center">
+            <symbol-icon :icon="item.symbol"></symbol-icon>
+            <div class="asset-base-info">
+              <div>
+                {{ item.symbol }}
+              </div>
+              <span>ID: {{ item.assetKey }}</span>
             </div>
-            <span>ID: {{ item.assetKey }}</span>
           </div>
-        </div>
-        <el-checkbox v-model="item.added"></el-checkbox>
-      </li>
-    </ul>
-    <div class="footer-wrap">
-      <el-button @click="close">{{ $t("public.public8") }}</el-button>
-      <el-button type="primary" @click="confirm">
-        {{ $t("public.public9") }}
-      </el-button>
-    </div>
-    <div class="dialog-footer_mobile">
-      <el-button @click="close">
-        {{ $t("public.public8") }}
-      </el-button>
-      <el-button type="primary" @click="confirm">
-        {{ $t("public.public9") }}
-      </el-button>
-    </div>
-  </el-dialog>
+          <el-checkbox v-model="item.added"></el-checkbox>
+        </li>
+      </ul>
+      <div class="footer-wrap">
+        <el-button @click="close">{{ $t("public.public8") }}</el-button>
+        <el-button type="primary" @click="confirm">
+          {{ $t("public.public9") }}
+        </el-button>
+      </div>
+      <div class="dialog-footer_mobile">
+        <el-button @click="close">
+          {{ $t("public.public8") }}
+        </el-button>
+        <el-button type="primary" @click="confirm">
+          {{ $t("public.public9") }}
+        </el-button>
+      </div>
+    </el-dialog>
+  </div>
 </template>
 
 <script>
@@ -239,6 +241,11 @@ export default {
   }
 
   @media screen and (max-width: 1200px) {
+    .custom-overlay {
+      .el-overlay {
+        padding: 20px !important;
+      }
+    }
     .list-wrap {
       li {
         .asset-base-info {

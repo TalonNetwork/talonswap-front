@@ -44,25 +44,27 @@
       </div>
       <div class="language" @click="switchLang">{{ lang }}</div>
     </div>
-    <el-dialog
-      title="Connect to a wallet"
-      custom-class="connect-dialog"
-      :show-close="false"
-      v-model="showConnect"
-      @closed="showConnectDialog(false)"
-    >
-      <div class="list">
-        <div
-          class="connect-btn"
-          v-for="(item, index) in providerList"
-          :key="index"
-          @click="connectProvider(item.provider)"
-        >
-          {{ item.name }}
-          <img class="fr" :src="item.src" alt="" />
+    <div class="custom-overlay">
+      <el-dialog
+          title="Connect to a wallet"
+          custom-class="connect-dialog"
+          :show-close="false"
+          v-model="showConnect"
+          @closed="showConnectDialog(false)"
+      >
+        <div class="list">
+          <div
+              class="connect-btn"
+              v-for="(item, index) in providerList"
+              :key="index"
+              @click="connectProvider(item.provider)"
+          >
+            {{ item.name }}
+            <img class="fr" :src="item.src" alt="" />
+          </div>
         </div>
-      </div>
-    </el-dialog>
+      </el-dialog>
+    </div>
     <div class="custom-overlay">
       <el-dialog
         :title="$t('public.public6')"

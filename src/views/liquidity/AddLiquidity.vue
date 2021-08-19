@@ -477,6 +477,8 @@ export default defineComponent({
             message: t("transfer.transfer14"),
             type: "success"
           });
+          state.fromAmount = "";
+          state.toAmount = "";
           setTimeout(() => {
             context.emit("updateList");
           }, 200);

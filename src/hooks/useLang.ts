@@ -7,6 +7,7 @@ export default function useLang() {
   const lang = computed(() => {
     return locale.value === "en" ? "简体中文" : "EN";
   });
+  store.commit("switchLang", locale.value);
   function switchLang() {
     locale.value = lang.value === "EN" ? "en" : "zh-cn";
     localStorage.setItem("lang", locale.value);

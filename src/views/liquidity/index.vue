@@ -1,9 +1,9 @@
 <template>
   <div class="w1300">
     <div
-        class="liquidity"
-        v-loading="loading"
-        element-loading-background="rgba(255, 255, 255, 0.8)"
+      class="liquidity"
+      v-loading="loading"
+      element-loading-background="rgba(255, 255, 255, 0.8)"
     >
       <div class="overview" v-if="!addLiquidity">
         <div class="top-part">
@@ -18,10 +18,10 @@
           </div>
         </div>
         <div
-            class="your-liquidity"
-            v-if="talonAddress"
-            v-loading="myLoading"
-            element-loading-background="rgba(255, 255, 255, 0.8)"
+          class="your-liquidity"
+          v-if="talonAddress"
+          v-loading="myLoading"
+          element-loading-background="rgba(255, 255, 255, 0.8)"
         >
           <h3>{{ $t("liquidity.liquidity4") }}</h3>
           <div class="liquidity-list">
@@ -30,22 +30,22 @@
                 <div class="symbol">
                   <div class="img-wrap">
                     <symbol-icon
-                        class="symbol1"
-                        :icon="item.token0.symbol"
+                      class="symbol1"
+                      :icon="item.token0.symbol"
                     ></symbol-icon>
                     <symbol-icon
-                        class="symbol2"
-                        :icon="item.token1.symbol"
+                      class="symbol2"
+                      :icon="item.token1.symbol"
                     ></symbol-icon>
                   </div>
                   <span>{{ item.lpTokenAmount.token.symbol }}</span>
                 </div>
                 <div class="value">
                   <el-tooltip
-                      class="item"
-                      effect="dark"
-                      :content="item.amount"
-                      placement="top"
+                    class="item"
+                    effect="dark"
+                    :content="item.amount"
+                    placement="top"
                   >
                     <span class="click">{{ item.amountSlice }}</span>
                   </el-tooltip>
@@ -53,19 +53,19 @@
                 <div class="view-detail" @click="toggleDetail(item)">
                   {{ $t("liquidity.liquidity5") }}
                   <i
-                      :class="{
-                    'el-icon-arrow-right': true,
-                    expand: item.showDetail
-                  }"
+                    :class="{
+                      'el-icon-arrow-right': true,
+                      expand: item.showDetail
+                    }"
                   ></i>
                 </div>
               </div>
               <collapse-transition>
                 <detail-bar
-                    v-show="item.showDetail"
-                    :talonAddress="talonAddress"
-                    :info="item"
-                    @loading="handleLoadig"
+                  v-show="item.showDetail"
+                  :talonAddress="talonAddress"
+                  :info="item"
+                  @loading="handleLoadig"
                 ></detail-bar>
               </collapse-transition>
             </div>
@@ -74,11 +74,11 @@
         </div>
       </div>
       <add-liquidity
-          v-else
-          v-model:show="addLiquidity"
-          :assetsList="assetsList"
-          :talonAddress="talonAddress"
-          @updateList="getUserLiquidity"
+        v-else
+        v-model:show="addLiquidity"
+        :assetsList="assetsList"
+        :talonAddress="talonAddress"
+        @updateList="getUserLiquidity"
       ></add-liquidity>
     </div>
   </div>
@@ -123,7 +123,6 @@ export default defineComponent({
       getUserLiquidity();
       state.assetsList = await getAssetList(talonAddress.value);
     });
-
     async function getUserLiquidity() {
       console.log(talonAddress.value, 99);
       if (talonAddress.value) {

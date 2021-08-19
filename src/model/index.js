@@ -1,5 +1,13 @@
 import { listen } from "@/api/promiseSocket";
-import { createRPCParams, divisionAndFix, Plus, Times } from "@/api/util";
+import {
+  createRPCParams,
+  divisionAndFix,
+  Plus,
+  Times,
+  toNumberStr,
+  tofix,
+  divisionDecimals
+} from "@/api/util";
 import config from "@/config";
 
 const url = config.WS_URL;
@@ -44,13 +52,19 @@ export async function getAssetList(address) {
       Plus(item.timeLock, item.consensusLockStr),
       decimal
     );
-    item.available = divisionAndFix(item.balanceStr, decimal, decimal);
+    // item.available = divisionAndFix(item.balanceStr, decimal, decimal);
     item.valuation = Times(item.number, item.usdPrice).toFixed(2);
+    item.available = toNumberStr(
+      parseFloat(
+        tofix(divisionDecimals(item.balanceStr, decimal).toString(), 8, -1)
+      ),
+      8
+    );
   });
   // 返回按字母排序
-  const sortDataBySymbol = [...res].sort((a, b) => {
-    return a.symbol > b.symbol ? 1 : -1;
-  });
+  const sortDataBySymbol = [...res]
+    .sort((a, b) => (a.symbol < b.symbol ? 1 : -1))
+    .sort((a, b) => (a.usdPrice < b.usdPrice ? 1 : -1));
   return sortDataBySymbol;
 }
 

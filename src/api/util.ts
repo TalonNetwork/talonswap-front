@@ -84,12 +84,12 @@ export function divisionAndFix(nu: string, decimals: string | number, fix = 6) {
 }
 
 export function fixNumber(str: string, fix = 8) {
-  str = "" + str
+  str = "" + str;
   const int = str.split(".")[0];
   let float = str.split(".")[1];
   if (!float || !Number(float)) return int;
-  float = float.slice(0, fix).replace(/(0+)$/g,"")
-  return Number(float) ? int + "." + float : int
+  float = float.slice(0, fix).replace(/(0+)$/g, "");
+  return Number(float) ? int + "." + float : int;
 }
 
 /**
@@ -300,7 +300,7 @@ export const _networkInfo = {
     mainAsset: "ETH",
     ropsten: "0x3",
     homestead: "0x1"
-  },
+  }
   // BSC: {
   //   name: "BSC",
   //   chainId: 102,
@@ -365,8 +365,26 @@ export function parseChainInfo(key: string) {
 
 //转千分位
 export function toThousands(num: string | number) {
-  const N = num.toString().split('.');
+  const N = num.toString().split(".");
   const int = N[0];
-  const float = N[1] ? '.' + N[1] : '';
-  return int.toString().replace(/(\d)(?=(?:\d{3})+$)/g, '$1,') + float;
+  const float = N[1] ? "." + N[1] : "";
+  return int.toString().replace(/(\d)(?=(?:\d{3})+$)/g, "$1,") + float;
+}
+
+// 格式化科学记数法
+export function toNumberStr(num: number, digits: number) {
+  // 正则匹配小数科学记数法
+  if (/^(\d+(?:\.\d+)?)(e)([-]?\d+)$/.test(String(num))) {
+    // 正则匹配小数点最末尾的0
+    let temp = /^(\d{1,}(?:,\d{3})*\.(?:0*[1-9]+)?)(0*)?$/.exec(
+      num.toFixed(digits)
+    );
+    if (temp) {
+      return temp[1];
+    } else {
+      return num.toFixed(digits);
+    }
+  } else {
+    return "" + num;
+  }
 }

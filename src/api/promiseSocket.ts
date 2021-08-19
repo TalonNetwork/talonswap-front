@@ -9,8 +9,8 @@ interface Socket {
 }
 
 interface PCallback {
-  resolve: Callback,
-  reject? :Callback
+  resolve: Callback;
+  reject?: Callback;
 }
 
 interface UpdateHandle {
@@ -18,8 +18,6 @@ interface UpdateHandle {
 }
 
 type Callback = (data: any) => void;
-
-
 
 class WebSocketBuilder {
   static sockets: Socket = {};
@@ -31,7 +29,7 @@ class WebSocketBuilder {
   url: string;
   updateHandle: UpdateHandle;
   ws: WebSocket | null;
-  status: string
+  status: string;
 
   onOpen = () => {};
   constructor(url: string) {
@@ -126,7 +124,7 @@ class WebSocketBuilder {
         }
         break;
       case "Error":
-        // console.log(444444);
+      // console.log(444444);
       // this.onError && this.onError(data);
     }
   }
