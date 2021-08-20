@@ -9,9 +9,11 @@
     ></overview>
     <swap
       :assetsList="assetsList"
+      :defaultAsset="defaultAsset"
       @toggleExpand="toggleExpand"
       @selectAsset="selectAsset"
       @updateRate="updateRate"
+      @updateOrderList="updateOrderList"
     ></swap>
   </div>
 </template>
@@ -37,25 +39,27 @@ export default defineComponent({
   setup() {
     const store = useStore();
     const state = reactive({
-      showOverview: false,
+      showOverview: localStorage.getItem("showOverview") === "true",
       assetsList: [],
       swapRate: "",
       swapSymbol: [],
       orderList: [],
-      orderLoading: true
+      orderLoading: false,
+      defaultAsset: null // 默认选择的资产
     });
     function toggleExpand() {
       state.showOverview = !state.showOverview;
+      localStorage.setItem("showOverview", state.showOverview);
     }
 
     const talonAddress = computed(() => store.getters.talonAddress);
     onMounted(async () => {
       state.assetsList = await getAssetList(talonAddress.value);
+      state.defaultAsset = state.assetsList.find(item => item.symbol === "NVT");
     });
 
     async function selectAsset(fromAsset, toAsset) {
-      if (!talonAddress.value) return;
-      console.log(fromAsset, 112233, toAsset);
+      if (!talonAddress.value || !fromAsset || !toAsset) return;
       state.swapSymbol = [fromAsset.symbol, toAsset.symbol];
       const fromToken = nerve.swap.token(fromAsset.chainId, fromAsset.assetId);
       const toToken = nerve.swap.token(toAsset.chainId, toAsset.assetId);
@@ -92,6 +96,12 @@ export default defineComponent({
       }
     }
 
+    async function updateOrderList(fromAsset, toAsset) {
+      await selectAsset(fromAsset, toAsset);
+      state.assetsList = await getAssetList(talonAddress.value);
+      state.defaultAsset = state.assetsList.find(item => item.symbol === "NVT");
+    }
+
     function updateRate(rate) {
       state.swapRate = rate;
     }
@@ -100,7 +110,8 @@ export default defineComponent({
       ...toRefs(state),
       toggleExpand,
       selectAsset,
-      updateRate
+      updateRate,
+      updateOrderList
     };
   }
 });

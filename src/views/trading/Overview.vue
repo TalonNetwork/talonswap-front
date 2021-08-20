@@ -1,6 +1,6 @@
 <template>
   <div class="overview pd_40_rd_20">
-    <div class="head">
+    <div class="head" v-if="swapSymbol.length !== 0">
       <div class="top flex-center">
         <symbol-icon class="img1" :icon="swapSymbol[0]"></symbol-icon>
         <symbol-icon class="img2" :icon="swapSymbol[1]"></symbol-icon>

@@ -66,7 +66,7 @@
         </div>
         <div class="info-item flex-between">
           <div class="left">{{ $t("trading.trading7") }}</div>
-          <div class="right">0.03%</div>
+          <div class="right" :style="{ color: priceImpactColor }">0.03%</div>
         </div>
         <div class="info-item flex-between">
           <div class="left">{{ $t("trading.trading8") }}</div>
@@ -74,7 +74,7 @@
         </div>
         <div class="info-item flex-between">
           <div class="left">{{ $t("trading.trading9") }}</div>
-          <div class="right">0.3%</div>
+          <div class="right">{{ fee }} {{ toAsset.symbol }}</div>
         </div>
       </div>
       <div class="swap-route">
@@ -175,7 +175,8 @@ export default defineComponent({
     SymbolIcon
   },
   props: {
-    assetsList: Array
+    assetsList: Array,
+    defaultAsset: Object
   },
   setup(props, context) {
     let storedSwapPairInfo = {}; // 缓存的swapPairInfo
@@ -198,7 +199,9 @@ export default defineComponent({
       protectPercent: 1, // 划点保护
       protectSets: [0.5, 1, 3],
       routesSymbol: [],
-      loading: false
+      loading: false,
+      fee: 0,
+      priceImpact: "" // 价格影响
     });
 
     // 选择swap资产 asset-选择的资产, type-from/to
@@ -243,18 +246,22 @@ export default defineComponent({
             tokenOutStr: toAssetKey,
             tokenInAmount: timesDecimals(1, state.fromAsset.decimals) // 随便输入的 1
           });
-          // console.log(res, 9666);
+          console.log(res, 9666);
           if (res) {
-            const routes = res.tokenPath.map(v => {
-              return v.symbol;
-            });
-            const idKeys = res.tokenPath.map(v => {
-              return {
-                chainId: v.assetChainId,
-                assetId: v.assetId,
-                decimals: v.decimals
-              };
-            });
+            const routes =
+              res.tokenPath &&
+              res.tokenPath.map(v => {
+                return v.symbol;
+              });
+            const idKeys =
+              res.tokenPath &&
+              res.tokenPath.map(v => {
+                return {
+                  chainId: v.assetChainId,
+                  assetId: v.assetId,
+                  decimals: v.decimals
+                };
+              });
             // 如果路径为3 则通过两次getSwapPairInfo缓存两个流动池的余额
             if (res.tokenPath.length > 2) {
               const middleKey =
@@ -338,6 +345,7 @@ export default defineComponent({
                 res.tokenAmountOut.token.decimals
               )
             : "0";
+          console.log(storedSwapPairInfo[key], "storedSwapPairInfo[key]storedSwapPairInfo[key]")
           storedSwapPairInfo[key].swapRate = rate + state.toAsset.symbol; // 兑换比例 1 in / n out
           context.emit("updateRate", storedSwapPairInfo[key].swapRate);
         }
@@ -402,7 +410,14 @@ export default defineComponent({
         }
       }
     );
-
+    watch(
+      () => props.defaultAsset,
+      val => {
+        if (val) {
+          state.fromAsset = val;
+        }
+      }
+    );
     async function refreshRate() {
       await storeSwapPairInfo(true);
       const res = getSwapAmount(state.fromAmount, "to"); // 通过from计算to
@@ -503,6 +518,20 @@ export default defineComponent({
       );
     });
 
+    const fee = computed(() => {
+      if (!state.fromAsset) return "";
+      return fixNumber(
+        Times(state.fromAmount, 0.3 / 100).toFixed(),
+        state.fromAmount.decimals
+      );
+    });
+
+    // eslint-disable-next-line vue/return-in-computed-property
+    const priceImpactColor = computed(() => {
+      if (!state.priceImpact) return "";
+      // if (state.priceImpact)
+    });
+
     const swapRate = ref(""); // swap兑换比例
     const swapDirection = ref("from-to"); // 比例方向
 
@@ -533,7 +562,7 @@ export default defineComponent({
 
     const settingDialog = ref(false);
     function toggleExpand() {
-      if (!state.fromAsset.symbol || !state.toAsset.symbol) return;
+      // if (!state.fromAsset.symbol || !state.toAsset.symbol) return;
       context.emit("toggleExpand");
     }
     function toggleSettingDialog() {
@@ -576,6 +605,9 @@ export default defineComponent({
             message: t("transfer.transfer14"),
             type: "success"
           });
+          state.fromAmount = "";
+          state.toAmount = "";
+          context.emit("updateOrderList", state.fromAsset, state.toAsset);
         } else {
           ElMessage.warning({
             message: "Swap Failed",
@@ -611,6 +643,8 @@ export default defineComponent({
     return {
       ...toRefs(state),
       minReceive,
+      fee,
+      priceImpactColor,
       selectAsset,
       max,
       disableTx,

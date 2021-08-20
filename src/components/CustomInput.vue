@@ -29,7 +29,7 @@
     <el-dialog
       custom-class="select-assets-dialog"
       :title="$t('transfer.transfer12')"
-      :show-close="false"
+      :show-close="true"
       top="10vh"
       v-model="showDialog"
       @closed="searchVal = ''"
@@ -54,7 +54,7 @@
             </div>
             <div class="asset-price">
               <span>{{ item.available }}</span>
-              <span>≈{{ item.usdPrice }}</span>
+              <!--<span>≈{{ item.usdPrice }}</span>-->
             </div>
           </div>
         </li>

@@ -131,6 +131,7 @@ export default defineComponent({
           userAddress: talonAddress.value
         });
         if (res) {
+          console.log(res, "resresres")
           const list = [];
           res.list.map(v => {
             const info = v.lpTokenAmount;

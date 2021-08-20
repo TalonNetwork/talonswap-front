@@ -1,22 +1,22 @@
 <template>
   <div class="custom-overlay">
     <el-dialog
-        custom-class="add-assets-dialog"
-        :title="$t('assets.assets7')"
-        :show-close="false"
-        top="10vh"
-        v-model="show"
-        @closed="close"
+      custom-class="add-assets-dialog"
+      :title="$t('assets.assets7')"
+      :show-close="false"
+      top="10vh"
+      v-model="show"
+      @closed="close"
     >
       <el-input
-          v-model="searchVal"
-          :placeholder="$t('assets.assets8')"
+        v-model="searchVal"
+        :placeholder="$t('assets.assets8')"
       ></el-input>
       <ul class="list-wrap">
         <li
-            v-for="item in list"
-            :key="item.assetKey"
-            @click="changeSelect(item.assetKey)"
+          v-for="item in list"
+          :key="item.assetKey"
+          @click="changeSelect(item.assetKey)"
         >
           <div class="flex-center">
             <symbol-icon :icon="item.symbol"></symbol-icon>
