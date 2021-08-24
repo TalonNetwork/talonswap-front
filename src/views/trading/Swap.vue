@@ -62,7 +62,7 @@
               !insufficient &&
               priceImpactColor === 'red'
           }"
-          :disabled="disableTx || toAmountError || fromAmountError"
+          :disabled="disableTx || !!fromAmountError || !!toAmountError"
           @click="swapTrade"
         >
           {{
@@ -295,6 +295,7 @@ export default defineComponent({
                 tokenAStr: middleKey,
                 tokenBStr: toAssetKey
               });
+              // console.log(result1, result2, "result2result2result2result2");
               if (result1 && result2) {
                 const pairs = [
                   nerve.swap.pair(
@@ -322,7 +323,6 @@ export default defineComponent({
                     result2.reserve1
                   )
                 ];
-
                 storedSwapPairInfo[key] = {
                   routes,
                   pairs,
