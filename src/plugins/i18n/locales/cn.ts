@@ -86,6 +86,7 @@ const cn = {
     trading12: "划点保护",
     trading13: "交易过期时间",
     trading14: "分钟",
+    trading15: "最多卖出"
   },
   liquidity: {
     liquidity1: "流动性",

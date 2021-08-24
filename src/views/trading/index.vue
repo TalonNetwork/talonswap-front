@@ -19,7 +19,15 @@
 </template>
 
 <script>
-import { defineComponent, onMounted, computed, reactive, toRefs } from "vue";
+import {
+  defineComponent,
+  onMounted,
+  computed,
+  reactive,
+  toRefs,
+  onBeforeUnmount,
+  watch
+} from "vue";
 import Overview from "./Overview.vue";
 import Swap from "./Swap.vue";
 import { useStore } from "vuex";
@@ -45,7 +53,8 @@ export default defineComponent({
       swapSymbol: [],
       orderList: [],
       orderLoading: false,
-      defaultAsset: null // 默认选择的资产
+      defaultAsset: null, // 默认选择的资产
+      orderTotal: 0
     });
     function toggleExpand() {
       state.showOverview = !state.showOverview;
@@ -53,9 +62,17 @@ export default defineComponent({
     }
 
     const talonAddress = computed(() => store.getters.talonAddress);
+    let timer;
     onMounted(async () => {
       state.assetsList = await getAssetList(talonAddress.value);
       state.defaultAsset = state.assetsList.find(item => item.symbol === "NVT");
+      timer = setInterval(async () => {
+        state.assetsList = await getAssetList(talonAddress.value);
+      }, 10000);
+    });
+    onBeforeUnmount(() => {
+      clearInterval(timer);
+      clearInterval(timer1);
     });
 
     async function selectAsset(fromAsset, toAsset) {
@@ -76,6 +93,8 @@ export default defineComponent({
       const res = await userTradeHistoryPage(data);
       state.orderLoading = false;
       if (res) {
+        state.orderTotal = res.total;
+        console.log(res.total, "12313")
         const list = [];
         res.list.map(v => {
           const fromToken = v.paidTokenAmount.token;
@@ -95,16 +114,36 @@ export default defineComponent({
         console.log(list, 44444);
       }
     }
-
+    // eslint-disable-next-line no-redeclare
+    let timer1;
     async function updateOrderList(fromAsset, toAsset) {
+      if (timer1) clearInterval(timer1);
+      timer1 = null;
       await selectAsset(fromAsset, toAsset);
+      timer1 = setInterval(async () => {
+        await selectAsset(fromAsset, toAsset);
+      }, 1500);
       state.assetsList = await getAssetList(talonAddress.value);
-      state.defaultAsset = state.assetsList.find(item => item.symbol === "NVT");
+      // state.defaultAsset = state.assetsList.find(item => item.symbol === "NVT");
     }
 
     function updateRate(rate) {
       state.swapRate = rate;
     }
+
+    watch(
+      () => state.orderTotal,
+      (newVal, oldVal) => {
+        console.log(newVal, oldVal);
+        if (newVal !== oldVal) {
+          if (timer1) clearInterval(timer1);
+          timer1 = null;
+        }
+      },
+      {
+        deep: true
+      }
+    );
 
     return {
       ...toRefs(state),

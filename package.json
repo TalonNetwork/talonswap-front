@@ -1,5 +1,5 @@
 {
-  "name": "talon",
+  "name": "Curium",
   "version": "1.0.0",
   "scripts": {
     "serve-beta": "cross-env BUILD_ENV=beta vue-cli-service serve",

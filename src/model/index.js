@@ -65,9 +65,9 @@ export async function getAssetList(address) {
   });
   // 返回按字母排序
   const sortDataBySymbol = [...res]
-    .sort((a, b) => (a.symbol.toUpperCase() > b.symbol.toUpperCase() ? 1 : -1))
-    .sort((a, b) => (a.available > b.available ? 1 : -1))
-    .sort((a, b) => (a.valuation < b.valuation ? 1 : -1));
+    .sort((a, b) => (a.symbol.toUpperCase() < b.symbol.toUpperCase() ? 1 : -1))
+    .sort((a, b) => (Number(a.available) < Number(b.available) ? 1 : -1));
+  // .sort((a, b) => (a.valuation < b.valuation ? 1 : -1));
   const mainSymbol = sortDataBySymbol.find(item => item.symbol === "NVT");
   const mainSymbolIndex = sortDataBySymbol.findIndex(
     item => item.symbol === "NVT"

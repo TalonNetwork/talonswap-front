@@ -9,13 +9,14 @@
         class="no-border"
         :model-value="amount"
         @input="changeInput"
+        @focus="customerFocus"
         placeholder="0.0"
       >
         <template #append><span @click="max">Max</span></template>
       </el-input>
       <div class="select-wrap flex-center" @click="showDialog = true">
         <template v-if="icon">
-          <symbol-icon :icon="icon"></symbol-icon>
+          <symbol-icon :icon="icon" />
           <span>{{ icon }}</span>
           <i class="el-icon-arrow-down"></i>
         </template>
@@ -25,7 +26,7 @@
         </template>
       </div>
     </div>
-    <span class="error-tip" v-if="errorTip">{{ errorTip }}</span>
+    <!--<span class="error-tip" v-if="errorTip">{{ errorTip }}</span>-->
     <el-dialog
       custom-class="select-assets-dialog"
       :title="$t('transfer.transfer12')"
@@ -149,12 +150,16 @@ export default {
       }
     },
     changeSelect(asset) {
+      if (!asset) return;
       this.$emit("selectAsset", asset);
       this.chooseAsset = asset;
       this.showDialog = false;
     },
     max() {
       this.$emit("max");
+    },
+    customerFocus() {
+      this.$emit("customerFocus");
     }
   }
 };
