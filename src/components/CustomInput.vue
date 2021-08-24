@@ -42,6 +42,9 @@
         <li
           v-for="item in list"
           :key="item.assetKey"
+          :class="{
+            disable_asset: selectedAsset && selectedAsset.symbol === item.symbol
+          }"
           @click="changeSelect(item)"
         >
           <div class="flex-center flex-1">
@@ -78,7 +81,11 @@ export default {
     },
     inputVal: String,
     balance: String,
-    errorTip: String
+    errorTip: String,
+    selectedAsset: {
+      type: Object,
+      default: () => null
+    }
   },
   components: {
     SymbolIcon
@@ -270,6 +277,11 @@ export default {
       }
     }
   }
+}
+
+.disable_asset {
+  opacity: 0.6;
+  cursor: not-allowed !important;
 }
 
 @media screen and (max-width: 1200px) {

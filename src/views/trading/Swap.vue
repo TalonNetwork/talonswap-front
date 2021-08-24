@@ -20,16 +20,18 @@
       <div class="from-symbol">
         <custom-input
           v-model:inputVal="fromAmount"
+          ref="customInput"
           :label="$t('trading.trading4')"
           :icon="fromAsset.symbol"
           :assetList="assetsList"
           :balance="fromAsset.available"
           :errorTip="fromAmountError"
+          :selectedAsset="fromAsset"
           @selectAsset="selectAsset($event, 'from')"
           @max="max('from')"
         ></custom-input>
       </div>
-      <div class="change-direction">
+      <div class="change-direction" @click="changeDirection">
         <img class="click" src="../../assets/img/swap-to.svg" alt="" />
       </div>
       <div class="to-symbol">
@@ -40,6 +42,7 @@
           :assetList="assetsList"
           :balance="toAsset.available"
           :errorTip="toAmountError"
+          :selectedAsset="toAsset"
           @selectAsset="asset => selectAsset(asset, 'to')"
           @max="max('to')"
         ></custom-input>
@@ -50,8 +53,23 @@
         <i class="iconfont icon-qiehuan" @click="toggleDirection"></i>
       </div>
       <div class="confirm-wrap">
-        <el-button type="primary" :disabled="disableTx" @click="swapTrade">
-          {{ insufficient ? $t("public.public17") : $t("public.public10") }}
+        <el-button
+          type="primary"
+          :class="{
+            deep_color:
+              !toAmountError &&
+              !fromAmountError &&
+              !insufficient &&
+              priceImpactColor === 'red'
+          }"
+          :disabled="disableTx || toAmountError || fromAmountError"
+          @click="swapTrade"
+        >
+          {{
+            toAmountError ||
+            fromAmountError ||
+            (insufficient ? $t("public.public17") : $t("public.public10"))
+          }}
         </el-button>
       </div>
     </div>
@@ -66,7 +84,9 @@
         </div>
         <div class="info-item flex-between">
           <div class="left">{{ $t("trading.trading7") }}</div>
-          <div class="right" :style="{ color: priceImpactColor }">0.03%</div>
+          <div class="right" :style="{ color: priceImpactColor }">
+            {{ priceImpactFloat }}
+          </div>
         </div>
         <div class="info-item flex-between">
           <div class="left">{{ $t("trading.trading8") }}</div>
@@ -74,7 +94,7 @@
         </div>
         <div class="info-item flex-between">
           <div class="left">{{ $t("trading.trading9") }}</div>
-          <div class="right">{{ fee }} {{ toAsset.symbol }}</div>
+          <div class="right">{{ fee }} {{ fromAsset.symbol }}</div>
         </div>
       </div>
       <div class="swap-route">
@@ -262,8 +282,9 @@ export default defineComponent({
                   decimals: v.decimals
                 };
               });
+            console.log(res.tokenPath, "res.tokenPath res.tokenPath")
             // 如果路径为3 则通过两次getSwapPairInfo缓存两个流动池的余额
-            if (res.tokenPath.length > 2) {
+            if (res.tokenPath && res.tokenPath.length > 2) {
               const middleKey =
                 res.tokenPath[1].assetChainId + "-" + res.tokenPath[1].assetId;
               const result1 = await getSwapPairInfo({
@@ -313,6 +334,7 @@ export default defineComponent({
                 tokenAStr: fromAssetKey,
                 tokenBStr: toAssetKey
               });
+              console.log(result, "result result result 123");
               if (result) {
                 storedSwapPairInfo[key] = {
                   routes,
@@ -345,7 +367,6 @@ export default defineComponent({
                 res.tokenAmountOut.token.decimals
               )
             : "0";
-          console.log(storedSwapPairInfo[key], "storedSwapPairInfo[key]storedSwapPairInfo[key]")
           storedSwapPairInfo[key].swapRate = rate + state.toAsset.symbol; // 兑换比例 1 in / n out
           context.emit("updateRate", storedSwapPairInfo[key].swapRate);
         }
@@ -353,7 +374,16 @@ export default defineComponent({
       state.routesSymbol = storedSwapPairInfo[key]
         ? storedSwapPairInfo[key].routes
         : [];
-      // console.log(storedSwapPairInfo, 666);
+    }
+
+    function changeDirection() {
+      if (!state.fromAsset || !state.toAsset) return false;
+      const tempToAsset = { ...state.toAsset };
+      const tempFromAsset = { ...state.fromAsset };
+      state.fromAsset = tempToAsset;
+      state.toAsset = tempFromAsset;
+
+      // toggleDirection();
     }
 
     // 监听fromAmount变化
@@ -371,7 +401,8 @@ export default defineComponent({
           }
 
           if (!state.disableWatchFromAmount) {
-            const res = getSwapAmount(val, "to"); // 通过from计算to
+            const [res, priceImpact] = getSwapAmount(val, "to"); // 通过from计算to
+            state.priceImpact = priceImpact || 0;
             state.insufficient = res === 0;
             if (res) {
               state.disableWatchToAmount = true; // 避免进入无限循环计算
@@ -393,7 +424,8 @@ export default defineComponent({
       async val => {
         if (val) {
           if (!state.disableWatchToAmount) {
-            const res = getSwapAmount(val, "from"); // 通过to计算from
+            const [res, priceImpact] = getSwapAmount(val, "from"); // 通过to计算from
+            state.priceImpact = priceImpact || 0;
             state.insufficient = res === 0;
             if (res) {
               state.disableWatchFromAmount = true;
@@ -420,7 +452,8 @@ export default defineComponent({
     );
     async function refreshRate() {
       await storeSwapPairInfo(true);
-      const res = getSwapAmount(state.fromAmount, "to"); // 通过from计算to
+      const [res, priceImpact] = getSwapAmount(state.fromAmount, "to"); // 通过from计算to
+      state.priceImpact = priceImpact || 0;
       // console.log(res, "fff");
       state.insufficient = res === 0;
       if (res) {
@@ -468,6 +501,11 @@ export default defineComponent({
             type === "from"
               ? nerve.swap.getAmountsIn(amount, tokenPathArray, pairsArray)
               : nerve.swap.getAmountsOut(amount, tokenPathArray, pairsArray);
+          const priceImpact = nerve.swap.getPriceImpact(
+            res,
+            tokenPathArray,
+            pairsArray
+          );
           console.log(
             res,
             amount,
@@ -481,9 +519,9 @@ export default defineComponent({
               ? res[0].toString()
               : res[res.length - 1].toString();
           console.log(res, 444);
-          return divisionAndFix(res, toDecimal, toDecimal);
+          return [divisionAndFix(res, toDecimal, toDecimal), priceImpact];
         } else {
-          return 0;
+          return [0, 0];
         }
       }
       return false;
@@ -526,12 +564,6 @@ export default defineComponent({
       );
     });
 
-    // eslint-disable-next-line vue/return-in-computed-property
-    const priceImpactColor = computed(() => {
-      if (!state.priceImpact) return "";
-      // if (state.priceImpact)
-    });
-
     const swapRate = ref(""); // swap兑换比例
     const swapDirection = ref("from-to"); // 比例方向
 
@@ -543,9 +575,9 @@ export default defineComponent({
 
     function max(type) {
       if (type === "from") {
-        state.fromAmount = state.fromAsset.available;
+        state.fromAmount = (state.fromAsset && state.fromAsset.available) || "";
       } else {
-        state.toAmount = state.toAsset.available;
+        state.toAmount = (state.toAsset && state.toAsset.available) || "";
       }
     }
 
@@ -558,6 +590,27 @@ export default defineComponent({
         state.insufficient ||
         !talonAddress.value
       );
+    });
+
+    const priceImpactFloat = computed(() => {
+      let str = Number(state.priceImpact * 100).toFixed(2);
+      str += "%";
+      return str;
+    });
+
+    const priceImpactColor = computed(() => {
+      let { value } = priceImpactFloat;
+      if (!value) return "";
+      const floatNum = value.split("%")[0] / 100;
+      if (floatNum < 0.003) {
+        return "green";
+      } else if (floatNum > 0.003 && floatNum < 0.03) {
+        return "";
+      } else if (floatNum > 0.03) {
+        return "red";
+      } else {
+        return ""
+      }
     });
 
     const settingDialog = ref(false);
@@ -655,7 +708,9 @@ export default defineComponent({
       toggleExpand,
       toggleSettingDialog,
       swapTrade,
-      refreshRate
+      refreshRate,
+      priceImpactFloat,
+      changeDirection
     };
   }
 });
@@ -744,9 +799,9 @@ export default defineComponent({
     .route-item {
       display: flex;
       align-items: center;
-      width: 35%;
+      //width: 35%;
       &:last-child {
-        width: 20%;
+        //width: 20%;
       }
       img {
         width: 30px;
@@ -836,5 +891,10 @@ export default defineComponent({
       padding-right: 20px !important;
     }
   }
+}
+.deep_color {
+  background-color: red !important;
+  color: #ffffff;
+  border: none;
 }
 </style>

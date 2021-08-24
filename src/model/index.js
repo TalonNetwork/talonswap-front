@@ -53,7 +53,9 @@ export async function getAssetList(address) {
       decimal
     );
     // item.available = divisionAndFix(item.balanceStr, decimal, decimal);
-    item.valuation = Times(item.number, item.usdPrice).toFixed(2);
+    item.valuation =
+      (isNaN(Times(item.number || 0, item.usdPrice).toFixed(2)) && 0) ||
+      Times(item.number || 0, item.usdPrice).toFixed(2);
     item.available = toNumberStr(
       parseFloat(
         tofix(divisionDecimals(item.balanceStr, decimal).toString(), 8, -1)
@@ -63,9 +65,9 @@ export async function getAssetList(address) {
   });
   // 返回按字母排序
   const sortDataBySymbol = [...res]
-    .sort((a, b) => (a.symbol > b.symbol ? 1 : -1))
+    .sort((a, b) => (a.symbol.toUpperCase() > b.symbol.toUpperCase() ? 1 : -1))
     .sort((a, b) => (a.available > b.available ? 1 : -1))
-    .sort((a, b) => (a.usdPrice < b.usdPrice ? 1 : -1));
+    .sort((a, b) => (a.valuation < b.valuation ? 1 : -1));
   const mainSymbol = sortDataBySymbol.find(item => item.symbol === "NVT");
   const mainSymbolIndex = sortDataBySymbol.findIndex(
     item => item.symbol === "NVT"
