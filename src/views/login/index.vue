@@ -57,7 +57,7 @@ export default defineComponent({
         const provider = getProvider();
         const EProvider = new ethers.providers.Web3Provider(provider);
         const jsonRpcSigner = EProvider.getSigner();
-        let message = "Generate Talon address";
+        let message = "Generate Curium address";
         const signature = await jsonRpcSigner.signMessage(message);
         const msgHash = ethers.utils.hashMessage(message);
         const msgHashBytes = ethers.utils.arrayify(msgHash);

@@ -13,7 +13,7 @@
         :class="{ isActive: current === 2 }"
         @click="current = 2"
       >
-        Talon Farm
+        Curium Farm
       </div>
     </div>
     <div class="search">

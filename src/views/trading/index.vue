@@ -93,8 +93,7 @@ export default defineComponent({
       const res = await userTradeHistoryPage(data);
       state.orderLoading = false;
       if (res) {
-        state.orderTotal = res.total;
-        console.log(res.total, "12313")
+        state.orderTotal = res.total || 0;
         const list = [];
         res.list.map(v => {
           const fromToken = v.paidTokenAmount.token;
