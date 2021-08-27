@@ -26,9 +26,9 @@ class WebSocketBuilder {
   url: string;
   updateHandle: UpdateHandle;
   ws: WebSocket | null;
-  status: string
+  status: string;
   // onOpen: () => void
-  onOpen = () => {}
+  onOpen = () => {};
   constructor(url: string) {
     this.timeout = 20000;
     this.timer1 = null;
@@ -37,17 +37,17 @@ class WebSocketBuilder {
     this.url = url;
     this.updateHandle = {};
     this.ws = null;
-    this.status = ""
+    this.status = "";
     // this.connect();
     // this.initEvent();
   }
 
   connect(onOpen: () => void) {
-    const ws = this.ws = new WebSocket(this.url);
-    this.status = ""
+    const ws = (this.ws = new WebSocket(this.url));
+    this.status = "";
     // const ws = this.ws;
     // if (!ws) return;
-    this.onOpen = onOpen
+    this.onOpen = onOpen;
     ws.onopen = () => {
       // this.status = true;
       onOpen();
@@ -99,8 +99,8 @@ class WebSocketBuilder {
     // console.log(this.ws?.readyState, 789)
     if (this.ws?.readyState === 0) {
       setTimeout(() => {
-        this.listen(channel, params, handle)
-      }, 200)
+        this.listen(channel, params, handle);
+      }, 200);
     } else {
       const existHandle = this.updateHandle[channel];
       if (existHandle && existHandle.length) {
@@ -115,7 +115,6 @@ class WebSocketBuilder {
       });
       this.send(msg);
     }
-    
   }
 
   send(msg: string) {
@@ -125,8 +124,8 @@ class WebSocketBuilder {
   unListen(channel: string) {
     if (this.ws?.readyState === 0) {
       setTimeout(() => {
-        this.unListen(channel)
-      }, 200)
+        this.unListen(channel);
+      }, 200);
     } else {
       delete this.updateHandle[channel];
       this.send(JSON.stringify({ action: "Unsubscribe", channel }));
@@ -178,7 +177,7 @@ class WebSocketBuilder {
     this.lockReconnect = true;
     setTimeout(() => {
       //没连接上会一直重连，设置延迟避免请求过多
-      this.connect(this.onOpen)
+      this.connect(this.onOpen);
       this.lockReconnect = false;
     }, 2000);
   }
@@ -192,7 +191,7 @@ export function listen(data: Params) {
     WebSocketBuilder.sockets[url] = newSocket;
     newSocket.connect(() => {
       newSocket.listen(channel, params, success);
-    })
+    });
   } else {
     if (socket.updateHandle[channel]) {
       socket.unListen(channel); // 先取消之前的

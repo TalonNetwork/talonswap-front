@@ -121,7 +121,7 @@ export default defineComponent({
       await selectAsset(fromAsset, toAsset);
       timer1 = setInterval(async () => {
         await selectAsset(fromAsset, toAsset);
-      }, 1500);
+      }, 5000);
       state.assetsList = await getAssetList(talonAddress.value);
       // state.defaultAsset = state.assetsList.find(item => item.symbol === "NVT");
     }

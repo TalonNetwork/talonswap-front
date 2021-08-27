@@ -68,9 +68,9 @@
         type="primary"
         v-else
         @click="addLiquidity"
-        :disabled="disableAdd"
+        :disabled="disableAdd || !!fromAmountError"
       >
-        {{ $t("liquidity.liquidity9") }}
+        {{ fromAmountError || $t("liquidity.liquidity9") }}
       </el-button>
     </div>
   </div>
@@ -95,7 +95,9 @@ import {
   parseChainInfo,
   divisionAndFix,
   Times,
-  divisionDecimals
+  divisionDecimals,
+  tofix,
+  Plus
 } from "@/api/util";
 import { useI18n } from "vue-i18n";
 import { useStore } from "vuex";
@@ -222,6 +224,8 @@ export default defineComponent({
             }
           }
         } else {
+          state.toAmount = "";
+          state.fromAmountError = "";
           // getSwapRate(true);
         }
       }
@@ -252,6 +256,8 @@ export default defineComponent({
             }
           }
         } else {
+          state.fromAmount = "";
+          state.fromAmountError = "";
           // getSwapRate(true);
         }
       }
@@ -330,19 +336,27 @@ export default defineComponent({
           );
           let share = 0;
           if (fromAmount && toAmount) {
+            const allReserveFrom = Plus(
+              timesDecimals(fromAmount, state.fromAsset.decimals),
+              info.reserveFrom
+            );
             share = fixNumber(
               Division(
                 timesDecimals(fromAmount, state.fromAsset.decimals),
-                info.reserveFrom
+                allReserveFrom
               ).toFixed(),
-              2
+              4
             );
             share =
-              Minus(share, 0.01) > 0
-                ? Minus(share, 100) > 0
-                  ? 100
-                  : share
+              Minus(share, 0.0001) > 0
+                ? tofix(Times(share, 100), 2, 1)
                 : "<0.01";
+            // share =
+            //   Minus(share, 0.0001) > 0
+            //     ? Minus(share, 100) > 0
+            //       ? 100
+            //       : share
+            //     : "<0.01";
           }
           return {
             from_to,
